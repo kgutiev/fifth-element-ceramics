@@ -7,15 +7,39 @@ public_folder: "/assets/uploads"
 
 collections:
   - name: "products"
-    label: "Товары"
+    label: "Каталог товаров"
     file: "data/products.json"
     fields:
-      - label: "Список товаров"
+      - label: "Все товары"
         name: "products"
         widget: "list"
         fields:
           - { label: "Название", name: "title", widget: "string" }
-          - { label: "Описание / Материалы", name: "info", widget: "string" }
-          - { label: "Цена (введите только цифры)", name: "price", widget: "number" }
-          - { label: "Высота (например: 28 см)", name: "height", widget: "string", required: false }
-          - { label: "Фото товара", name: "image", widget: "image" }
+          - { label: "Описание", name: "info", widget: "string" }
+          - { label: "Цена", name: "price", widget: "number" }
+          - { label: "Высота", name: "height", widget: "string", required: false }
+          - { label: "Фото", name: "image", widget: "image" }
+
+  - name: "homepage"
+    label: "Главная страница"
+    file: "data/homepage.json"
+    fields:
+      - label: "Избранные работы"
+        name: "featured"
+        widget: "list"
+        fields:
+          - { label: "Название", name: "title", widget: "string" }
+          - { label: "Описание", name: "info", widget: "string" }
+          - { label: "Цена", name: "price", widget: "number" }
+          - { label: "Высота", name: "height", widget: "string", required: false }
+          - { label: "Фото", name: "image", widget: "image" }
+
+      - label: "Контакты"
+        name: "contacts"
+        widget: "object"
+        fields:
+          - { label: "Город", name: "city", widget: "string" }
+          - { label: "Телефон", name: "phone", widget: "string", required: false }
+          - { label: "Email", name: "email", widget: "string", required: false }
+          - { label: "Ссылка Instagram", name: "instagram", widget: "string" }
+          - { label: "Ссылка Telegram", name: "telegram", widget: "string" }
