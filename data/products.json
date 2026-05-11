@@ -1,0 +1,18 @@
+{
+  "products": [
+    {
+      "title": "Ваза «Терра»",
+      "info": "Каменная масса, глазурь",
+      "price": 8500,
+      "height": "28 см",
+      "image": "/assets/uploads/terra-vase.jpg"
+    },
+    {
+      "title": "Ваза «Нуар»",
+      "info": "Чёрная масса G&S 371, без глазури",
+      "price": 6800,
+      "height": "22 см",
+      "image": "/assets/uploads/noir-vase.jpg"
+    }
+  ]
+}
