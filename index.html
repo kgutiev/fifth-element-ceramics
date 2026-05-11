@@ -160,59 +160,9 @@
           <h2 class="section-title">Наши работы</h2>
           <p class="section-subtitle">Каждое изделие существует в единственном экземпляре</p>
         </div>
-        <div class="product-grid">
-          <div class="product-card fade-in">
-            <div class="product-card-image">
-              <img src="./assets/workshop-closeup.jpg" alt="Ваза серии Terra — фактурная керамика" width="570" height="760" loading="lazy">
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Терра»</h3>
-              <p class="product-card-info">Каменная масса, глазурь · В. 28 см</p>
-              <p class="product-card-price">8 500 ₽</p>
-            </div>
-          </div>
-          <div class="product-card fade-in">
-            <div class="product-card-image">
-              <img src="./assets/textured-vase.jpg" alt="Ваза Нуар" width="570" height="570" loading="lazy">
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Нуар»</h3>
-              <p class="product-card-info">Чёрная масса G&S 371, без глазури · В. 22 см</p>
-              <p class="product-card-price">6 800 ₽</p>
-            </div>
-          </div>
-          <div class="product-card fade-in">
-            <div class="product-card-image">
-              <img src="./assets/turquoise-vase.jpg" alt="Ваза Бриз" width="570" height="635" loading="lazy">
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Бриз»</h3>
-              <p class="product-card-info">Каменная масса, бирюзовая глазурь · В. 32 см</p>
-              <p class="product-card-price">12 000 ₽</p>
-            </div>
-          </div>
-          <div class="product-card fade-in">
-            <div class="product-card-image">
-              <img src="./assets/crater-vase.jpg" alt="Ваза «Луна» с текстурой кратеров" width="698" height="939" loading="lazy">
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Луна»</h3>
-              <p class="product-card-info">Каменная масса, текстура кратеров · В. 22 см</p>
-              <p class="product-card-price">5 200 ₽</p>
-            </div>
-          </div>
-          <div class="product-card product-card--video fade-in">
-            <div class="product-card-image">
-              <video autoplay muted loop playsinline>
-                <source src="./assets/product-video.mp4" type="video/mp4">
-              </video>
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Терра»</h3>
-              <p class="product-card-info">Серия Terra · Фактурная керамика</p>
-              <p class="product-card-price">Смотреть видео</p>
-            </div>
-          </div>
+        <!-- 👇🏼 ДИНАМИЧЕСКИЙ БЛОК: заполняется из админки -->
+        <div class="product-grid" id="featured-grid">
+          <!-- Товары подгружаются автоматически -->
         </div>
         <div style="text-align: center; margin-top: var(--space-8);">
           <a href="./catalog.html" class="btn btn--outline">Весь каталог</a>
@@ -292,11 +242,9 @@
         </div>
         <div class="footer-links">
           <h4>Контакты</h4>
-          <ul>
-            <li><a href="https://www.instagram.com/fifthelement.ceramics" target="_blank" rel="noopener noreferrer">Instagram</a></li>
-            <li><a href="https://t.me/fifthelementceramics" target="_blank" rel="noopener noreferrer">Telegram-канал</a></li>
-            <li><a href="https://t.me/k_koshel" target="_blank" rel="noopener noreferrer">Telegram (лично)</a></li>
-            <li>Сочи / Москва</li>
+          <!-- 👇🏼 ДИНАМИЧЕСКИЙ БЛОК: заполняется из админки -->
+          <ul id="footer-contacts">
+            <!-- Контакты подгружаются автоматически -->
           </ul>
         </div>
       </div>
@@ -328,6 +276,45 @@
     window.addEventListener('scroll', () => {
       document.getElementById('site-header').classList.toggle('site-header--scrolled', window.scrollY > 10);
     });
+
+    // 👇🏼 ПОДГРУЗКА ДАННЫХ ИЗ АДМИНКИ
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/data/homepage.json')
+        .then(res => res.ok ? res.json() : Promise.reject('Ошибка загрузки'))
+        .then(data => {
+          // Избранные работы
+          const grid = document.getElementById('featured-grid');
+          if (grid && data.featured?.length) {
+            grid.innerHTML = data.featured.map(p => `
+              <div class="product-card fade-in">
+                <div class="product-card-image">
+                  <img src="${p.image}" alt="${p.title}" loading="lazy" width="570" height="760">
+                </div>
+                <div class="product-card-body">
+                  <h3 class="product-card-title">${p.title}</h3>
+                  <p class="product-card-info">${p.info}${p.height ? ' · В. ' + p.height : ''}</p>
+                  <p class="product-card-price">${p.price.toLocaleString('ru-RU')} ₽</p>
+                </div>
+              </div>
+            `).join('');
+          }
+
+          // Контакты в футере
+          const ul = document.getElementById('footer-contacts');
+          if (ul && data.contacts) {
+            const c = data.contacts;
+            ul.innerHTML = `
+              <li>${c.city}</li>
+              ${c.phone ? `<li><a href="tel:${c.phone.replace(/\s/g,'')}">${c.phone}</a></li>` : ''}
+              ${c.email ? `<li><a href="mailto:${c.email}">${c.email}</a></li>` : ''}
+              ${c.instagram ? `<li><a href="${c.instagram}" target="_blank" rel="noopener">Instagram</a></li>` : ''}
+              ${c.telegram ? `<li><a href="${c.telegram}" target="_blank" rel="noopener">Telegram</a></li>` : ''}
+            `;
+          }
+        })
+        .catch(err => console.error('⚠️ Не удалось загрузить данные:', err));
+    });
   </script>
 </body>
+</html>
 </html>
