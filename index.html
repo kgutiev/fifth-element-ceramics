@@ -1,16 +1,333 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>Админ-панель — Fifth Element Ceramics</title>
-  <!-- Стабильная версия без бага валидации config.yml -->
-  <script src="https://unpkg.com/decap-cms@3.0.12/dist/decap-cms.js"></script>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fifth Element Ceramics — Керамика ручной работы, Сочи</title>
+<meta name="description" content="Когда земля, вода, воздух и огонь вступают в союз — рождается пятый элемент. Керамические объекты и мастер-классы в Сочи. Валерия Гутиева.">
+<meta property="og:title" content="Fifth Element Ceramics — Керамика ручной работы, Сочи">
+<meta property="og:description" content="Когда земля, вода, воздух и огонь вступают в союз — рождается пятый элемент. Керамические объекты и мастер-классы.">
+<meta property="og:type" content="website">
+
+<link href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700&f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./base.css">
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <!-- Decap CMS UI рендерится автоматически -->
+  <!-- HEADER -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <a href="./index.html" class="logo" aria-label="Fifth Element Ceramics — Главная">
+        <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img">
+        <div class="logo-text">Fifth Element<span>Ceramics</span></div>
+      </a>
+
+      <nav class="nav-desktop">
+        <a href="./index.html" class="active">Главная</a>
+        <a href="./catalog.html">Каталог</a>
+        <a href="./about.html">О мастере</a>
+        <a href="./contact.html">Заказать</a>
+      </nav>
+
+      <div class="nav-controls">
+        <button class="theme-toggle" data-theme-toggle aria-label="Переключить тему">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <button class="menu-toggle" aria-label="Открыть меню" onclick="document.querySelector('.nav-mobile').classList.add('open')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE NAV -->
+  <nav class="nav-mobile" id="nav-mobile">
+    <button class="nav-mobile-close" aria-label="Закрыть меню" onclick="document.querySelector('.nav-mobile').classList.remove('open')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <a href="./index.html" onclick="document.querySelector('.nav-mobile').classList.remove('open')">Главная</a>
+    <a href="./catalog.html" onclick="document.querySelector('.nav-mobile').classList.remove('open')">Каталог</a>
+    <a href="./about.html" onclick="document.querySelector('.nav-mobile').classList.remove('open')">О мастере</a>
+    <a href="./contact.html" onclick="document.querySelector('.nav-mobile').classList.remove('open')">Заказать</a>
+  </nav>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-bg">
+        <video class="hero-video" autoplay muted loop playsinline poster="./assets/hero-poster.jpg">
+          <source src="./assets/hero-video.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+      </div>
+      <div class="hero-content">
+        <p class="hero-tag">Сочи / Москва</p>
+        <h1>Когда стихии вступают в союз</h1>
+        <p class="hero-description">Земля, вода, воздух и огонь — из их союза рождается пятый элемент. Керамические объекты ручной работы и мастер-классы по лепке от Валерии Гутиевой.</p>
+        <div class="hero-buttons">
+          <a href="./catalog.html" class="btn btn--primary">Смотреть каталог</a>
+          <a href="./contact.html" class="btn btn--outline">Записаться на мастер-класс</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header fade-in">
+          <p class="section-tag">Пятый элемент</p>
+          <h2 class="section-title">Четыре стихии — одно ремесло</h2>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card fade-in">
+            <div class="feature-icon">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M24 4C24 4 14 14 14 26C14 31.5 18.5 36 24 36C29.5 36 34 31.5 34 26C34 14 24 4 24 4Z"/>
+                <circle cx="24" cy="26" r="4" fill="currentColor" opacity="0.2"/>
+              </svg>
+            </div>
+            <h3>Керамические объекты</h3>
+            <p>Вазы, кружки, пашотницы, подсвечники и декор — каждое изделие уникально. Отпечатки пальцев и лёгкая асимметрия — часть характера.</p>
+          </div>
+          <div class="feature-card fade-in">
+            <div class="feature-icon">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="8" y="8" width="32" height="32" rx="4"/>
+                <path d="M16 24h16M24 16v16" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <h3>Мастер-классы</h3>
+            <p>Лепка из глины в уютной атмосфере с бокалом игристого. 2 часа творчества — и вы уносите домой изделие, сделанное своими руками.</p>
+          </div>
+          <div class="feature-card fade-in">
+            <div class="feature-icon">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="24" cy="24" r="16"/>
+                <path d="M24 12v12l8 8"/>
+              </svg>
+            </div>
+            <h3>Союз стихий</h3>
+            <p>Земля, вода, воздух и огонь — четыре элемента, из которых рождается каждое изделие. Пятый элемент — это любовь к ремеслу.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT PREVIEW -->
+    <section class="section about-preview">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-image fade-in">
+            <img src="./assets/master-valeria.jpg" alt="Валерия Гутиева — мастер Fifth Element Ceramics" width="800" height="1000" loading="lazy">
+          </div>
+          <div class="about-text fade-in">
+            <p class="section-tag">О мастере</p>
+            <h2>Валерия Гутиева</h2>
+            <p>Автор и основатель Fifth Element Ceramics. Создаю керамические объекты и провожу мастер-классы по лепке в Сочи и Москве.</p>
+            <p>Каждое изделие — это путь от комка глины через ручную лепку, сушку и обжиг к готовому объекту с собственным характером. Фактурные поверхности, натуральные цвета, живая энергия ручного труда.</p>
+            <a href="./about.html" class="btn btn--outline" style="margin-top: var(--space-4);">Подробнее о мастере</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELECTED WORKS -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header fade-in">
+          <p class="section-tag">Избранное</p>
+          <h2 class="section-title">Наши работы</h2>
+          <p class="section-subtitle">Каждое изделие существует в единственном экземпляре</p>
+        </div>
+        <div class="product-grid">
+          <div class="product-card fade-in">
+            <div class="product-card-image">
+              <img src="./assets/workshop-closeup.jpg" alt="Ваза серии Terra — фактурная керамика" width="570" height="760" loading="lazy">
+            </div>
+            <div class="product-card-body">
+              <h3 class="product-card-title">Ваза «Терра»</h3>
+              <p class="product-card-info">Каменная масса, глазурь · В. 28 см</p>
+              <p class="product-card-price">8 500 ₽</p>
+            </div>
+          </div>
+          <div class="product-card fade-in">
+            <div class="product-card-image">
+              <img src="./assets/textured-vase.jpg" alt="Ваза Нуар" width="570" height="570" loading="lazy">
+            </div>
+            <div class="product-card-body">
+              <h3 class="product-card-title">Ваза «Нуар»</h3>
+              <p class="product-card-info">Чёрная масса G&S 371, без глазури · В. 22 см</p>
+              <p class="product-card-price">6 800 ₽</p>
+            </div>
+          </div>
+          <div class="product-card fade-in">
+            <div class="product-card-image">
+              <img src="./assets/turquoise-vase.jpg" alt="Ваза Бриз" width="570" height="635" loading="lazy">
+            </div>
+            <div class="product-card-body">
+              <h3 class="product-card-title">Ваза «Бриз»</h3>
+              <p class="product-card-info">Каменная масса, бирюзовая глазурь · В. 32 см</p>
+              <p class="product-card-price">12 000 ₽</p>
+            </div>
+          </div>
+          <div class="product-card fade-in">
+            <div class="product-card-image">
+              <img src="./assets/crater-vase.jpg" alt="Ваза «Луна» с текстурой кратеров" width="698" height="939" loading="lazy">
+            </div>
+            <div class="product-card-body">
+              <h3 class="product-card-title">Ваза «Луна»</h3>
+              <p class="product-card-info">Каменная масса, текстура кратеров · В. 22 см</p>
+              <p class="product-card-price">5 200 ₽</p>
+            </div>
+          </div>
+          <div class="product-card product-card--video fade-in">
+            <div class="product-card-image">
+              <video autoplay muted loop playsinline>
+                <source src="./assets/product-video.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="product-card-body">
+              <h3 class="product-card-title">Ваза «Терра»</h3>
+              <p class="product-card-info">Серия Terra · Фактурная керамика</p>
+              <p class="product-card-price">Смотреть видео</p>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: var(--space-8);">
+          <a href="./catalog.html" class="btn btn--outline">Весь каталог</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="section" style="background: var(--color-surface);">
+      <div class="container">
+        <div class="section-header fade-in">
+          <p class="section-tag">Как мы работаем</p>
+          <h2 class="section-title">От глины к готовому изделию</h2>
+        </div>
+        <div class="process-video-block fade-in">
+          <video autoplay muted loop playsinline class="process-showcase-video">
+            <source src="./assets/process-video.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="process-steps">
+          <div class="process-step fade-in">
+            <h3>Замысел</h3>
+            <p>Каждое изделие начинается с идеи — формы, фактуры и настроения, которые оно должно передать.</p>
+          </div>
+          <div class="process-step fade-in">
+            <h3>Лепка</h3>
+            <p>Ручная лепка из пластов и жгутов. Глина Georg & Schneider — основа будущей вазы.</p>
+          </div>
+          <div class="process-step fade-in">
+            <h3>Сушка и утиль</h3>
+            <p>Медленная сушка и первый обжиг при 900°C превращают хрупкую глину в прочный бисквит.</p>
+          </div>
+          <div class="process-step fade-in">
+            <h3>Глазурь и обжиг</h3>
+            <p>Нанесение авторских глазурей Terracolor и финальный обжиг при 1230°C. Здесь рождается характер изделия.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section">
+      <div class="container container--narrow">
+        <div class="cta-banner fade-in">
+          <div class="cta-video-wrap">
+            <video autoplay muted loop playsinline class="cta-video">
+              <source src="./assets/masterclass-video.mp4" type="video/mp4">
+            </video>
+          </div>
+          <h2>Приходите на лепку из глины</h2>
+          <p>Мастер-классы в Сочи — от 2 500 ₽. Два часа спокойного творчества, все материалы включены, бокал игристого в подарок. Для иностранных гостей — занятия на английском от 60 €.</p>
+          <a href="./contact.html" class="btn btn--primary">Записаться</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="./index.html" class="logo" aria-label="Fifth Element Ceramics — Главная">
+            <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img">
+            <div class="logo-text">Fifth Element<span>Ceramics</span></div>
+          </a>
+          <p>Когда земля, вода, воздух и огонь вступают в союз — рождается пятый элемент. Керамические объекты и мастер-классы.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Навигация</h4>
+          <ul>
+            <li><a href="./index.html">Главная</a></li>
+            <li><a href="./catalog.html">Каталог</a></li>
+            <li><a href="./about.html">О мастере</a></li>
+            <li><a href="./contact.html">Заказать</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="https://www.instagram.com/fifthelement.ceramics" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+            <li><a href="https://t.me/fifthelementceramics" target="_blank" rel="noopener noreferrer">Telegram-канал</a></li>
+            <li><a href="https://t.me/k_koshel" target="_blank" rel="noopener noreferrer">Telegram (лично)</a></li>
+            <li>Сочи / Москва</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Fifth Element Ceramics. Все права защищены.</span>
+        <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Theme toggle
+    (function(){
+      const t = document.querySelector('[data-theme-toggle]');
+      const r = document.documentElement;
+      let d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      r.setAttribute('data-theme', d);
+      if(t) t.addEventListener('click', () => {
+        d = d === 'dark' ? 'light' : 'dark';
+        r.setAttribute('data-theme', d);
+        t.setAttribute('aria-label', 'Переключить на ' + (d === 'dark' ? 'светлую' : 'тёмную') + ' тему');
+        t.innerHTML = d === 'dark'
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+      });
+    })();
+
+    // Header scroll shadow
+    window.addEventListener('scroll', () => {
+      document.getElementById('site-header').classList.toggle('site-header--scrolled', window.scrollY > 10);
+    });
+  </script>
 </body>
 </html>
