@@ -1,10 +1,25 @@
 {
-  "featured": [],
+  "featured": [
+    {
+      "title": "Ваза «Терра»",
+      "info": "Каменная масса, глазурь",
+      "price": 8500,
+      "height": "28 см",
+      "image": "./assets/workshop-closeup.jpg"
+    },
+    {
+      "title": "Ваза «Нуар»",
+      "info": "Чёрная масса G&S 371, без глазури",
+      "price": 6800,
+      "height": "22 см",
+      "image": "./assets/textured-vase.jpg"
+    }
+  ],
   "contacts": {
     "city": "Сочи / Москва",
     "phone": "",
     "email": "",
-    "instagram": "",
-    "telegram": ""
+    "instagram": "https://www.instagram.com/fifthelement.ceramics",
+    "telegram": "https://t.me/fifthelementceramics"
   }
 }
