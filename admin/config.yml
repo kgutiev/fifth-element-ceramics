@@ -12,7 +12,7 @@ collections:
     format: "json"
     fields:
       - name: "products"
-        label: "Все товары"
+        label: "Список товаров"
         widget: "list"
         fields:
           - { name: "title", label: "Название", widget: "string" }
