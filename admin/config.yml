@@ -8,39 +8,45 @@ public_folder: "/assets/uploads"
 collections:
   - name: "products"
     label: "Каталог товаров"
-    file: "data/products.json"
-    format: "json"
-    fields:
-      - name: "products"
-        label: "Товары"
-        widget: "list"
+    files:
+      - name: "products_data"
+        label: "Все товары"
+        file: "data/products.json"
+        format: "json"
         fields:
-          - { name: "title", label: "Название", widget: "string" }
-          - { name: "info", label: "Описание", widget: "string" }
-          - { name: "price", label: "Цена", widget: "number" }
-          - { name: "height", label: "Высота", widget: "string", required: false }
-          - { name: "image", label: "Фото", widget: "image" }
+          - name: "products"
+            label: "Список товаров"
+            widget: "list"
+            fields:
+              - { name: "title", label: "Название", widget: "string" }
+              - { name: "info", label: "Описание", widget: "string" }
+              - { name: "price", label: "Цена", widget: "number" }
+              - { name: "height", label: "Высота", widget: "string", required: false }
+              - { name: "image", label: "Фото", widget: "image" }
 
   - name: "homepage"
     label: "Главная страница"
-    file: "data/homepage.json"
-    format: "json"
-    fields:
-      - name: "featured"
-        label: "Избранные работы"
-        widget: "list"
+    files:
+      - name: "homepage_data"
+        label: "Данные главной"
+        file: "data/homepage.json"
+        format: "json"
         fields:
-          - { name: "title", label: "Название", widget: "string" }
-          - { name: "info", label: "Описание", widget: "string" }
-          - { name: "price", label: "Цена", widget: "number" }
-          - { name: "height", label: "Высота", widget: "string", required: false }
-          - { name: "image", label: "Фото", widget: "image" }
-      - name: "contacts"
-        label: "Контакты"
-        widget: "object"
-        fields:
-          - { name: "city", label: "Город", widget: "string" }
-          - { name: "phone", label: "Телефон", widget: "string", required: false }
-          - { name: "email", label: "Email", widget: "string", required: false }
-          - { name: "instagram", label: "Instagram", widget: "string" }
-          - { name: "telegram", label: "Telegram", widget: "string" }
+          - name: "featured"
+            label: "Избранные работы"
+            widget: "list"
+            fields:
+              - { name: "title", label: "Название", widget: "string" }
+              - { name: "info", label: "Описание", widget: "string" }
+              - { name: "price", label: "Цена", widget: "number" }
+              - { name: "height", label: "Высота", widget: "string", required: false }
+              - { name: "image", label: "Фото", widget: "image" }
+          - name: "contacts"
+            label: "Контакты"
+            widget: "object"
+            fields:
+              - { name: "city", label: "Город", widget: "string" }
+              - { name: "phone", label: "Телефон", widget: "string", required: false }
+              - { name: "email", label: "Email", widget: "string", required: false }
+              - { name: "instagram", label: "Instagram", widget: "string" }
+              - { name: "telegram", label: "Telegram", widget: "string" }
