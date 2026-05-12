@@ -5,6 +5,9 @@ backend:
 media_folder: "assets/uploads"
 public_folder: "/assets/uploads"
 
+editor:
+  preview: false
+
 collections:
   - name: "products"
     label: "Каталог товаров"
@@ -12,7 +15,7 @@ collections:
     format: "json"
     fields:
       - name: "products"
-        label: "Список товаров"
+        label: "Товары"
         widget: "list"
         fields:
           - { name: "title", label: "Название", widget: "string" }
