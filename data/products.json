@@ -1,3 +1,32 @@
-{{
-  "products": []
+{
+  "products": [
+    {
+      "title": "Ваза «Терра»",
+      "info": "Каменная масса, глазурь",
+      "price": 8500,
+      "height": "28 см",
+      "image": "./assets/workshop-closeup.jpg"
+    },
+    {
+      "title": "Ваза «Нуар»",
+      "info": "Чёрная масса G&S 371, без глазури",
+      "price": 6800,
+      "height": "22 см",
+      "image": "./assets/textured-vase.jpg"
+    },
+    {
+      "title": "Ваза «Бриз»",
+      "info": "Каменная масса, бирюзовая глазурь",
+      "price": 12000,
+      "height": "32 см",
+      "image": "./assets/turquoise-vase.jpg"
+    },
+    {
+      "title": "Ваза «Луна»",
+      "info": "Каменная масса, текстура кратеров",
+      "price": 5200,
+      "height": "22 см",
+      "image": "./assets/crater-vase.jpg"
+    }
+  ]
 }
