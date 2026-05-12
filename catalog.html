@@ -148,33 +148,61 @@
       document.getElementById('site-header').classList.toggle('site-header--scrolled', window.scrollY > 10);
     });
 
-    // 👇🏼 ПОДГРУЗКА ТОВАРОВ ИЗ JSON + ФИЛЬТРЫ
-    document.addEventListener('DOMContentLoaded', () => {
-      fetch('/data/products.json')
-        .then(res => {
-          if (!res.ok) throw new Error('Не удалось загрузить каталог');
-          return res.json();
-        })
-        .then(data => {
-          const grid = document.getElementById('product-grid');
-          if (!grid || !data.products?.length) return;
+// 👇🏼 ПОДГРУЗКА ТОВАРОВ (адаптировано под GitHub Pages)
+document.addEventListener('DOMContentLoaded', () => {
+  // Формируем абсолютный путь относительно текущей страницы
+  const jsonUrl = new URL('./data/products.json', window.location.href).toString();
 
-          grid.innerHTML = data.products.map(p => `
-            <div class="product-card fade-in" data-category="${p.category || 'all'}">
-              <div class="product-card-image">
-                <img src="${p.image}" alt="${p.title}" loading="lazy" width="570" height="760">
-              </div>
-              <div class="product-card-body">
-                <h3 class="product-card-title">${p.title}</h3>
-                <p class="product-card-info">${p.info}</p>
-                <p class="product-card-price">${Number(p.price).toLocaleString('ru-RU')} ₽</p>
-                ${p.status ? `<span class="product-card-tag">${p.status}</span>` : ''}
-              </div>
-            </div>
-          `).join('');
+  fetch(jsonUrl)
+    .then(res => {
+      if (!res.ok) throw new Error(`Сервер вернул ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      const grid = document.getElementById('product-grid');
+      if (!grid || !data.products?.length) return;
 
-          // Переподключаем фильтры после рендера
-          initFilters();
+      grid.innerHTML = data.products.map(p => `
+        <div class="product-card fade-in" data-category="${p.category || 'all'}">
+          <div class="product-card-image">
+            <img src="${p.image}" alt="${p.title}" loading="lazy" width="570" height="760">
+          </div>
+          <div class="product-card-body">
+            <h3 class="product-card-title">${p.title}</h3>
+            <p class="product-card-info">${p.info}</p>
+            <p class="product-card-price">${Number(p.price).toLocaleString('ru-RU')} ₽</p>
+            ${p.status ? `<span class="product-card-tag">${p.status}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      initFilters();
+    })
+    .catch(err => {
+      console.error('⚠️ Ошибка загрузки каталога:', err);
+      document.getElementById('product-grid').innerHTML = `
+        <p style="text-align:center; color:#e74c3c; padding:2rem;">
+          Каталог временно недоступен.<br>
+          <small>URL запроса: ${jsonUrl}</small>
+        </p>`;
+    });
+
+  function initFilters() {
+    const tabs = document.getElementById('filter-tabs');
+    if (!tabs) return;
+    tabs.addEventListener('click', (e) => {
+      const tab = e.target.closest('.filter-tab');
+      if (!tab) return;
+      const filter = tab.dataset.filter;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.product-card').forEach(card => {
+        card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+      });
+    });
+  }
+  initFilters();
+});
         })
         .catch(err => {
           console.error('⚠️ Ошибка загрузки каталога:', err);
