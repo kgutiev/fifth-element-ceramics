@@ -1,15 +1,15 @@
 backend:
   name: github
-  repo: "ВАШ_ЛОГИН/ИМЯ_РЕПОЗИТОРИЯ"
+  repo: "ВАШ_НИК/ИМЯ_РЕПО"
   branch: main
-  client_id: "ВАШ_CLIENT_ID_ИЗ_OAUTH_APP"
+  client_id: "ВАШ_CLIENT_ID"
 
 media_folder: "assets/uploads"
 public_folder: "/assets/uploads"
 
 collections:
   - name: "products"
-    label: "Каталог товаров"
+    label: "Каталог"
     file: "data/products.json"
     format: "json"
     fields:
@@ -22,16 +22,8 @@ collections:
           - { name: "price", label: "Цена", widget: "number" }
           - { name: "height", label: "Размер", widget: "string" }
           - { name: "image", label: "Фото", widget: "image" }
-          - name: "category"
-            label: "Категория"
-            widget: "select"
-            options: ["vases", "pots", "decor"]
-            default: "vases"
-          - name: "status"
-            label: "Статус"
-            widget: "select"
-            options: ["В наличии", "Продано", "Под заказ"]
-            default: "В наличии"
+          - { name: "category", label: "Категория", widget: "select", options: ["vases", "pots", "decor"] }
+          - { name: "status", label: "Статус", widget: "select", options: ["В наличии", "Продано", "Под заказ"] }
 
   - name: "homepage"
     label: "Главная / Контакты"
@@ -39,7 +31,7 @@ collections:
     format: "json"
     fields:
       - name: "featured"
-        label: "Избранные работы"
+        label: "Избранное"
         widget: "list"
         fields:
           - { name: "title", label: "Название", widget: "string" }
@@ -52,7 +44,7 @@ collections:
         widget: "object"
         fields:
           - { name: "city", label: "Город", widget: "string" }
-          - { name: "phone", label: "Телефон", widget: "string", required: false }
-          - { name: "email", label: "Email", widget: "string", required: false }
+          - { name: "phone", label: "Телефон", widget: "string" }
+          - { name: "email", label: "Email", widget: "string" }
           - { name: "instagram", label: "Instagram", widget: "string" }
           - { name: "telegram", label: "Telegram", widget: "string" }
