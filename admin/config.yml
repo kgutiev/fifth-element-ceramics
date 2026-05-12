@@ -5,9 +5,6 @@ backend:
 media_folder: "assets/uploads"
 public_folder: "/assets/uploads"
 
-editor:
-  preview: false
-
 collections:
   - name: "products"
     label: "Каталог товаров"
