@@ -1,8 +1,8 @@
 backend:
   name: github
-  repo: "kgutiev/fifth-element-ceramics"
+  repo: "ВАШ_ЛОГИН/ИМЯ_РЕПОЗИТОРИЯ"
   branch: main
-  client_id: "Ov23liPIQAvQTIDuqmdL"backend:
+  client_id: "ВАШ_CLIENT_ID_ИЗ_OAUTH_APP"
 
 media_folder: "assets/uploads"
 public_folder: "/assets/uploads"
@@ -20,8 +20,18 @@ collections:
           - { name: "title", label: "Название", widget: "string" }
           - { name: "info", label: "Описание", widget: "string" }
           - { name: "price", label: "Цена", widget: "number" }
-          - { name: "height", label: "Высота", widget: "string", required: false }
+          - { name: "height", label: "Размер", widget: "string" }
           - { name: "image", label: "Фото", widget: "image" }
+          - name: "category"
+            label: "Категория"
+            widget: "select"
+            options: ["vases", "pots", "decor"]
+            default: "vases"
+          - name: "status"
+            label: "Статус"
+            widget: "select"
+            options: ["В наличии", "Продано", "Под заказ"]
+            default: "В наличии"
 
   - name: "homepage"
     label: "Главная / Контакты"
@@ -35,7 +45,7 @@ collections:
           - { name: "title", label: "Название", widget: "string" }
           - { name: "info", label: "Описание", widget: "string" }
           - { name: "price", label: "Цена", widget: "number" }
-          - { name: "height", label: "Высота", widget: "string", required: false }
+          - { name: "height", label: "Размер", widget: "string" }
           - { name: "image", label: "Фото", widget: "image" }
       - name: "contacts"
         label: "Контакты"
