@@ -4,8 +4,177 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Admin — Fifth Element Ceramics</title>
-  <script src="https://unpkg.com/decap-cms@3.0.0/dist/decap-cms.js" defer></script>
+  <title>Админ-панель — Fifth Element Ceramics</title>
+  <style>
+    :root { --bg: #0f0f0f; --surface: #1a1a1a; --text: #e6e6e6; --accent: #c8a97e; --danger: #e74c3c; --success: #2ecc71; --border: #333; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); line-height: 1.5; padding: 2rem; max-width: 1000px; margin: 0 auto; }
+    h1 { margin-bottom: 2rem; color: var(--accent); }
+    .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    .tab { padding: 0.75rem 1rem; cursor: pointer; opacity: 0.6; border-bottom: 2px solid transparent; }
+    .tab.active { opacity: 1; border-color: var(--accent); }
+    .panel { display: none; } .panel.active { display: block; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #aaa; }
+    input, textarea { width: 100%; padding: 0.75rem; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 4px; }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    .product-row { display: grid; grid-template-columns: 2fr 2fr 1fr 1fr 2fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: end; }
+    .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-danger { background: var(--danger); color: #fff; padding: 0.5rem 0.75rem; }
+    .btn-add { margin: 1rem 0; background: transparent; border: 1px dashed var(--accent); color: var(--accent); }
+    .status { padding: 0.75rem; margin-top: 1rem; border-radius: 4px; display: none; }
+    .status.success { display: block; background: rgba(46,204,113,0.2); border: 1px solid var(--success); }
+    .note { font-size: 0.85rem; color: #888; margin-top: 0.5rem; }
+    @media (max-width: 768px) { .product-row { grid-template-columns: 1fr; } }
+  </style>
 </head>
-<body></body>
+<body>
+  <h1>⚙️ Админ-панель Fifth Element</h1>
+  
+  <div class="tabs">
+    <div class="tab active" data-tab="products">📦 Товары</div>
+    <div class="tab" data-tab="homepage">🏠 Главная / Контакты</div>
+  </div>
+
+  <div id="products" class="panel active">
+    <div id="products-list"></div>
+    <button class="btn btn-add" onclick="addProduct()">+ Добавить товар</button>
+  </div>
+
+  <div id="homepage" class="panel">
+    <div class="form-group">
+      <label>Город</label>
+      <input type="text" id="city">
+    </div>
+    <div class="form-group">
+      <label>Телефон</label>
+      <input type="text" id="phone">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="text" id="email">
+    </div>
+    <div class="form-group">
+      <label>Instagram URL</label>
+      <input type="text" id="instagram">
+    </div>
+    <div class="form-group">
+      <label>Telegram URL</label>
+      <input type="text" id="telegram">
+    </div>
+    <hr style="border-color:var(--border); margin:1.5rem 0">
+    <h3>Избранные работы (для главной)</h3>
+    <div id="featured-list" style="margin-top:1rem"></div>
+    <button class="btn btn-add" onclick="addFeatured()">+ Добавить в избранное</button>
+  </div>
+
+  <button class="btn btn-primary" style="margin-top:2rem; width:100%" onclick="saveData()">💾 Сохранить и скачать JSON</button>
+  <div id="status" class="status"></div>
+  <p class="note">После сохранения: замените файлы в GitHub → Netlify обновит сайт за ~30 сек.</p>
+
+<script>
+let products = [];
+let homepage = { featured: [], contacts: {} };
+
+// Загрузка данных
+Promise.all([
+  fetch('../data/products.json').then(r=>r.json()),
+  fetch('../data/homepage.json').then(r=>r.json())
+]).then(([prodData, homeData]) => {
+  products = prodData.products || [];
+  homepage = homeData;
+  if(!homepage.contacts) homepage.contacts = {};
+  renderProducts();
+  renderHomepage();
+}).catch(()=> {
+  alert('⚠️ Не удалось загрузить данные. Убедитесь, что открыли админку через Netlify, а не локально.');
+});
+
+// Рендер товаров
+function renderProducts() {
+  const container = document.getElementById('products-list');
+  container.innerHTML = products.map((p,i) => `
+    <div class="product-row" data-idx="${i}">
+      <input value="${p.title||''}" onchange="updateProduct(${i},'title',this.value)" placeholder="Название">
+      <input value="${p.info||''}" onchange="updateProduct(${i},'info',this.value)" placeholder="Описание">
+      <input type="number" value="${p.price||0}" onchange="updateProduct(${i},'price',+this.value)" placeholder="Цена">
+      <input value="${p.height||''}" onchange="updateProduct(${i},'height',this.value)" placeholder="Высота">
+      <input value="${p.image||''}" onchange="updateProduct(${i},'image',this.value)" placeholder="Путь к фото (/assets/uploads/...)">
+      <button class="btn btn-danger" onclick="removeProduct(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addProduct() { products.push({title:'',info:'',price:0,height:'',image:''}); renderProducts(); }
+function removeProduct(i) { products.splice(i,1); renderProducts(); }
+function updateProduct(i, field, val) { products[i][field] = val; }
+
+// Рендер главной
+function renderHomepage() {
+  const c = homepage.contacts;
+  document.getElementById('city').value = c.city || '';
+  document.getElementById('phone').value = c.phone || '';
+  document.getElementById('email').value = c.email || '';
+  document.getElementById('instagram').value = c.instagram || '';
+  document.getElementById('telegram').value = c.telegram || '';
+
+  const fContainer = document.getElementById('featured-list');
+  fContainer.innerHTML = (homepage.featured||[]).map((p,i) => `
+    <div class="product-row" data-idx="${i}" style="margin-bottom:0.5rem">
+      <input value="${p.title||''}" onchange="updateFeatured(${i},'title',this.value)" placeholder="Название">
+      <input value="${p.info||''}" onchange="updateFeatured(${i},'info',this.value)" placeholder="Описание">
+      <input type="number" value="${p.price||0}" onchange="updateFeatured(${i},'price',+this.value)" placeholder="Цена">
+      <input value="${p.height||''}" onchange="updateFeatured(${i},'height',this.value)" placeholder="Высота">
+      <input value="${p.image||''}" onchange="updateFeatured(${i},'image',this.value)" placeholder="Путь к фото">
+      <button class="btn btn-danger" onclick="removeFeatured(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addFeatured() { homepage.featured.push({title:'',info:'',price:0,height:'',image:''}); renderHomepage(); }
+function removeFeatured(i) { homepage.featured.splice(i,1); renderHomepage(); }
+function updateFeatured(i, field, val) { homepage.featured[i][field] = val; }
+
+// Сохранение
+function saveData() {
+  homepage.contacts = {
+    city: document.getElementById('city').value,
+    phone: document.getElementById('phone').value,
+    email: document.getElementById('email').value,
+    instagram: document.getElementById('instagram').value,
+    telegram: document.getElementById('telegram').value
+  };
+
+  const prodJSON = JSON.stringify({products}, null, 2);
+  const homeJSON = JSON.stringify(homepage, null, 2);
+
+  downloadFile('data/products.json', prodJSON);
+  setTimeout(()=> downloadFile('data/homepage.json', homeJSON), 100);
+
+  const status = document.getElementById('status');
+  status.className = 'status success';
+  status.textContent = '✅ JSON-файлы скачаны. Замените их в папке /data в GitHub. Сайт обновится автоматически.';
+}
+
+function downloadFile(name, content) {
+  const blob = new Blob([content], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Табы
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
 </html>
