@@ -9,6 +9,56 @@ public_folder: "/assets/uploads"
 
 collections:
   - name: "products"
+    label: "Каталог товаров"
+    files:
+      - name: "products_file"
+        label: "Товары"
+        file: "data/products.json"
+        format: "json"
+        fields:
+          - name: "products"
+            label: "Список товаров"
+            widget: "list"
+            fields:
+              - { name: "title", label: "Название", widget: "string" }
+              - { name: "info", label: "Описание", widget: "string" }
+              - { name: "price", label: "Цена", widget: "number" }
+              - { name: "height", label: "Размер", widget: "string", required: false }
+              - { name: "image", label: "Фото", widget: "image" }
+              - { name: "category", label: "Категория", widget: "select", options: ["vases", "pots", "decor"] }
+              - { name: "status", label: "Статус", widget: "select", options: ["В наличии", "Продано", "Под заказ"] }
+
+  - name: "homepage"
+    label: "Главная / Контакты"
+    files:
+      - name: "homepage_file"
+        label: "Данные главной"
+        file: "data/homepage.json"
+        format: "json"
+        fields:
+          - name: "featured"
+            label: "Избранные работы"
+            widget: "list"
+            fields:
+              - { name: "title", label: "Название", widget: "string" }
+              - { name: "info", label: "Описание", widget: "string" }
+              - { name: "price", label: "Цена", widget: "number" }
+              - { name: "height", label: "Размер", widget: "string", required: false }
+              - { name: "image", label: "Фото", widget: "image" }
+          - name: "contacts"
+            label: "Контакты"
+            widget: "object"
+            fields:
+              - { name: "city", label: "Город", widget: "string" }
+              - { name: "phone", label: "Телефон", widget: "string", required: false }
+              - { name: "email", label: "Email", widget: "string", required: false }
+              - { name: "instagram", label: "Instagram", widget: "string" }
+              - { name: "telegram", label: "Telegram", widget: "string" }
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  - name: "products"
     label: "Каталог"
     file: "data/products.json"
     format: "json"
