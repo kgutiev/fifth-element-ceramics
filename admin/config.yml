@@ -1,7 +1,8 @@
 backend:
   name: github
-  repo: "ВАШ_ЛОГИН/ИМЯ_РЕПОЗИТОРИЯ"
+  repo: "kgutiev/fifth-element-ceramics"
   branch: main
+  client_id: "Ov23liPIQAvQTIDuqmdL"backend:
 
 media_folder: "assets/uploads"
 public_folder: "/assets/uploads"
