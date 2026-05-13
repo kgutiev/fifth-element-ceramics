@@ -25,8 +25,14 @@ collections:
               - { name: "price", label: "Цена", widget: "number" }
               - { name: "height", label: "Размер", widget: "string" }
               - { name: "image", label: "Фото", widget: "image" }
-              - { name: "category", label: "Категория", widget: "select", options: ["vases", "pots", "decor"] }
-              - { name: "status", label: "Статус", widget: "select", options: ["В наличии", "Продано", "Под заказ"] }
+              - name: "category"
+                label: "Категория"
+                widget: "select"
+                options: ["vases", "pots", "decor"]
+              - name: "status"
+                label: "Статус"
+                widget: "select"
+                options: ["В наличии", "Продано", "Под заказ"]
 
   - name: "homepage"
     label: "Главная / Контакты"
