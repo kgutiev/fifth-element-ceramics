@@ -3,84 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — Fifth Element</title>
-  <!-- Флаг ручной инициализации (ОБЯЗАТЕЛЬНО ДО загрузки CMS) -->
-  <script>
-    window.CMS_MANUAL_INIT = true;
-  </script>
-  <!-- Библиотека Decap CMS v3 -->
-  <script src="https://unpkg.com/decap-cms@3.0.12/dist/decap-cms.js"></script>
+  <title>Admin</title>
+  <script>window.CMS_MANUAL_INIT = true;</script>
+  <script src="https://unpkg.com/decap-cms@3.0.12/dist/decap-cms.js?t=999"></script>
 </head>
 <body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      if (typeof CMS === 'undefined') {
-        document.body.innerHTML = '<h2 style="color:red;padding:2rem;">⚠️ CMS не загрузился. Проверьте соединение.</h2>';
-        return;
-      }
-
-      // Прямая инициализация. Без config.yml, без слияний, без Netlify
       CMS.init({
-        load_config_file: false, // 👈 Отключаем загрузку config.yml полностью
+        load_config_file: false,
         backend: {
           name: 'github',
           repo: 'kgutiev/fifth-element-ceramics',
-          branch: 'main', // ⚠️ Если ветка называется master, замените на 'master'
+          branch: 'main',
           client_id: 'Ov23liPIQAvQTIDuqmdL'
         },
         media_folder: 'assets/uploads',
         public_folder: '/assets/uploads',
         collections: [
-          {
-            name: 'products',
-            label: 'Каталог товаров',
-            files: [{
-              name: 'products_file',
-              label: 'Товары',
-              file: 'data/products.json',
-              format: 'json',
-              fields: [{
-                name: 'products',
-                label: 'Список',
-                widget: 'list',
-                fields: [
-                  { name: 'title', label: 'Название', widget: 'string' },
-                  { name: 'info', label: 'Описание', widget: 'string' },
-                  { name: 'price', label: 'Цена', widget: 'number' },
-                  { name: 'height', label: 'Размер', widget: 'string' },
-                  { name: 'image', label: 'Фото', widget: 'image' },
-                  { name: 'category', label: 'Категория', widget: 'select', options: ['vases','pots','decor'] },
-                  { name: 'status', label: 'Статус', widget: 'select', options: ['В наличии','Продано','Под заказ'] }
-                ]
-              }]
-            }]
-          },
-          {
-            name: 'homepage',
-            label: 'Главная / Контакты',
-            files: [{
-              name: 'homepage_file',
-              label: 'Данные главной',
-              file: 'data/homepage.json',
-              format: 'json',
-              fields: [
-                { name: 'featured', label: 'Избранное', widget: 'list', fields: [
-                  { name: 'title', label: 'Название', widget: 'string' },
-                  { name: 'info', label: 'Описание', widget: 'string' },
-                  { name: 'price', label: 'Цена', widget: 'number' },
-                  { name: 'height', label: 'Размер', widget: 'string' },
-                  { name: 'image', label: 'Фото', widget: 'image' }
-                ]},
-                { name: 'contacts', label: 'Контакты', widget: 'object', fields: [
-                  { name: 'city', label: 'Город', widget: 'string' },
-                  { name: 'phone', label: 'Телефон', widget: 'string' },
-                  { name: 'email', label: 'Email', widget: 'string' },
-                  { name: 'instagram', label: 'Instagram', widget: 'string' },
-                  { name: 'telegram', label: 'Telegram', widget: 'string' }
-                ]}
-              ]
-            }]
-          }
+          { name: 'products', label: 'Каталог', files: [{ name: 'p', label: 'Товары', file: 'data/products.json', format: 'json', fields: [{ name: 'products', label: 'Список', widget: 'list', fields: [{ name: 'title', label: 'Название', widget: 'string' }, { name: 'info', label: 'Описание', widget: 'string' }, { name: 'price', label: 'Цена', widget: 'number' }, { name: 'height', label: 'Размер', widget: 'string' }, { name: 'image', label: 'Фото', widget: 'image' }, { name: 'category', label: 'Категория', widget: 'select', options: ['vases','pots','decor'] }, { name: 'status', label: 'Статус', widget: 'select', options: ['В наличии','Продано','Под заказ'] }] }] }] },
+          { name: 'homepage', label: 'Главная', files: [{ name: 'h', label: 'Данные', file: 'data/homepage.json', format: 'json', fields: [{ name: 'featured', label: 'Избранное', widget: 'list', fields: [{ name: 'title', label: 'Название', widget: 'string' }, { name: 'info', label: 'Описание', widget: 'string' }, { name: 'price', label: 'Цена', widget: 'number' }, { name: 'height', label: 'Размер', widget: 'string' }, { name: 'image', label: 'Фото', widget: 'image' }] }, { name: 'contacts', label: 'Контакты', widget: 'object', fields: [{ name: 'city', label: 'Город', widget: 'string' }, { name: 'phone', label: 'Телефон', widget: 'string' }, { name: 'email', label: 'Email', widget: 'string' }, { name: 'instagram', label: 'Instagram', widget: 'string' }, { name: 'telegram', label: 'Telegram', widget: 'string' }] }] }] }
         ]
       });
     });
