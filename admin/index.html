@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin</title>
+  <title>CMS — Fifth Element</title>
   <script>window.CMS_MANUAL_INIT = true;</script>
-  <script src="https://unpkg.com/decap-cms@3.0.12/dist/decap-cms.js?t=999"></script>
+  <script src="https://unpkg.com/decap-cms@3.0.12/dist/decap-cms.js?v=final"></script>
 </head>
 <body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      if (!window.CMS) {
+        document.body.innerHTML = '<h2 style="color:red;padding:2rem;">⚠️ Библиотека не загрузилась.</h2>';
+        return;
+      }
       CMS.init({
         load_config_file: false,
         backend: {
