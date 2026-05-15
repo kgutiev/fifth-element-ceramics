@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка — Fifth Element Ceramics</title>
+  <style>
+    :root { --bg: #fff; --text: #1a1a1a; --card: #f6f8fa; --border: #d0d7de; --primary: #2ea44f; --danger: #cf222e; --link: #0969da; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --text: #e6edf3; --card: #161b22; --border: #30363d; --primary: #238636; --danger: #f85149; --link: #58a6ff; } }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 2rem; line-height: 1.5; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+    input, select { width: 100%; padding: 0.5rem; margin: 0.25rem 0; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
+    button { background: var(--primary); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    button:hover { opacity: 0.9; }
+    button.danger { background: var(--danger); }
+    .hidden { display: none !important; }
+    .error { background: #ffebe9; color: var(--danger); padding: 1rem; border-radius: 6px; margin: 1rem 0; border: 1px solid #ffcecb; }
+    .success { background: #dafbe1; color: #1a7f37; padding: 1rem; border-radius: 6px; margin: 1rem 0; border: 1px solid #4ac26b; }
+    .product-grid { display: grid; gap: 1rem; }
+    @media (min-width: 768px) { .product-grid { grid-template-columns: 1fr 1fr; } }
+    .product-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem; }
+    .product-title { font-weight: 600; font-size: 1.1rem; margin: 0; }
+    .product-info { color: #666; font-size: 0.9rem; margin: 0.25rem 0; }
+    .actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .loading { text-align: center; padding: 2rem; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🛠 Админка товаров</h1>
+      <div id="user-block" class="hidden">
+        <span id="user-name" style="margin-right: 0.75rem;"></span>
+        <button onclick="logout()" class="danger">Выйти</button>
+      </div>
+    </div>
+
+    <!-- Вход -->
+    <div id="login-block" class="card">
+      <h2>Вход</h2>
+      <p>Для редактирования каталога авторизуйтесь через GitHub.</p>
+      <button onclick="login()">🔐 Войти через GitHub</button>
+      <p style="font-size: 0.85rem; color: #666; margin-top: 1rem;">
+        Приложение: <strong>Fifth Element Admin</strong><br>
+        Репозиторий: <strong>kgutiev/fifth-element-ceramics</strong>
+      </p>
+    </div>
+
+    <!-- Ошибки / Успех -->
+    <div id="error-block" class="error hidden"></div>
+    <div id="success-block" class="success hidden">
+      ✅ Изменения сохранены! <a href="https://5elementceramics.ru/catalog.html" target="_blank">Посмотреть сайт</a>
+    </div>
+
+    <!-- Приложение -->
+    <div id="app-block" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2>Товары (<span id="count">0</span>)</h2>
+        <button onclick="loadProducts()" style="background: var(--link);">🔄 Обновить</button>
+      </div>
+      <div id="products-list" class="product-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    // ⚙️ КОНФИГУРАЦИЯ
+    const CONFIG = {
+      clientId: 'Ov23liPIQAvQTIDuqmdL',
+      repo: 'kgutiev/fifth-element-ceramics',
+      branch: 'main', // Если ваша ветка master — замените здесь
+      filePath: 'data/products.json'
+    };
+
+    // 🔐 Авторизация
+    function login() {
+      const redirect = encodeURIComponent(window.location.href.split('?')[0]);
+      const scope = 'repo';
+      window.location.href = `https://github.com/login/oauth/authorize?client_id=${CONFIG.clientId}&redirect_uri=${redirect}&scope=${scope}`;
+    }
+
+    function logout() {
+      localStorage.removeItem('gh_token');
+      window.location.reload();
+    }
+
+    async function handleAuth() {
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get('code');
+      
+      if (code) {
+        // Примечание: Для полноценного OAuth обмена кода на токен нужен бэкенд с client_secret.
+        // Для статического сайта мы используем упрощённый подход:
+        // 1. Пользователь создаёт Personal Access Token (PAT) с правами 'repo'
+        // 2. Вставляет его при первом входе
+        // Это безопасно, так как токен хранится только в localStorage браузера пользователя.
+        
+        alert('⚠️ Для безопасности: создайте "Personal Access Token (classic)" в настройках GitHub с галочкой "repo" и вставьте его ниже. Токен сохранится только в этом браузере.');
+        const token = prompt('Вставьте ваш GitHub Personal Access Token:');
+        if (token && token.startsWith('ghp_')) {
+          localStorage.setItem('gh_token', token);
+          url.searchParams.delete('code');
+          window.history.replaceState({}, '', url);
+        }
+      }
+
+      const token = localStorage.getItem('gh_token');
+      if (token) {
+        try {
+          const res = await fetch('https://api.github.com/user', {
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+          });
+          if (res.ok) {
+            const user = await res.json();
+            document.getElementById('user-name').textContent = `@${user.login}`;
+            document.getElementById('login-block').classList.add('hidden');
+            document.getElementById('user-block').classList.remove('hidden');
+            document.getElementById('app-block').classList.remove('hidden');
+            await loadProducts(token);
+          } else {
+            showError('Неверный токен. Попробуйте войти снова.');
+            localStorage.removeItem('gh_token');
+          }
+        } catch (e) { showError('Ошибка сети: ' + e.message); }
+      }
+    }
+
+    // 📦 Загрузка товаров
+    async function loadProducts(token) {
+      if (!token) token = localStorage.getItem('gh_token');
+      const list = document.getElementById('products-list');
+      list.innerHTML = '<p class="loading">Загрузка...</p>';
+      
+      try {
+        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.filePath}?ref=${CONFIG.branch}`, {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
+        const content = JSON.parse(atob(data.content));
+        window.fileSha = data.sha;
+        renderProducts(content.products || []);
+      } catch (e) {
+        list.innerHTML = `<p class="error">❌ Ошибка: ${e.message}</p>`;
+      }
+    }
+
+    function renderProducts(products) {
+      const list = document.getElementById('products-list');
+      document.getElementById('count').textContent = products.length;
+      
+      if (!products.length) {
+        list.innerHTML = '<p style="text-align:center;color:#666">Товаров нет</p>';
+        return;
+      }
+      
+      list.innerHTML = products.map((p, i) => `
+        <div class="card">
+          <div class="product-header">
+            <div>
+              <h3 class="product-title">${escapeHtml(p.title)}</h3>
+              <p class="product-info">${escapeHtml(p.info || '')}</p>
+            </div>
+            <img src="${escapeHtml(p.image || '')}" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:4px;background:#eee">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+            <div>
+              <label style="font-size:0.85rem;color:#666">Цена (₽)</label>
+              <input type="number" id="price-${i}" value="${p.price}" min="0">
+            </div>
+            <div>
+              <label style="font-size:0.85rem;color:#666">Статус</label>
+              <select id="status-${i}">
+                ${['В наличии','Продано','Под заказ'].map(s => 
+                  `<option value="${s}"${p.status===s?' selected':''}>${s}</option>`
+                ).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button onclick="saveProduct(${i}, '${escapeHtml(p.title)}')">💾 Сохранить</button>
+            <button class="danger" onclick="deleteProduct(${i}, '${escapeHtml(p.title)}')" style="margin-left:auto">🗑 Удалить</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ✏️ Сохранение изменений
+    async function saveProduct(index, title) {
+      const token = localStorage.getItem('gh_token');
+      const price = document.getElementById(`price-${index}`).value;
+      const status = document.getElementById(`status-${index}`).value;
+      
+      try {
+        // 1. Получаем актуальный файл
+        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.filePath}?ref=${CONFIG.branch}`, {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        const data = await res.json();
+        const json = JSON.parse(atob(data.content));
+        
+        // 2. Меняем данные
+        json.products[index].price = Number(price);
+        json.products[index].status = status;
+        
+        // 3. Отправляем обновление
+        const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.filePath}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
+          body: JSON.stringify({
+            message: `admin: update ${title} (price: ${price}, status: ${status})`,
+            content: btoa(JSON.stringify(json, null, 2)),
+            sha: data.sha,
+            branch: CONFIG.branch
+          })
+        });
+        
+        if (updateRes.ok) {
+          showSuccess();
+          // Обновляем локальный sha для следующих правок
+          const updated = await updateRes.json();
+          window.fileSha = updated.content.sha;
+        } else {
+          const err = await updateRes.json();
+          showError('Ошибка: ' + (err.message || 'Неизвестная'));
+        }
+      } catch (e) { showError('Ошибка сети: ' + e.message); }
+    }
+
+    // 🗑 Удаление товара
+    async function deleteProduct(index, title) {
+      if (!confirm(`Удалить "${title}"? Это действие нельзя отменить.`)) return;
+      
+      const token = localStorage.getItem('gh_token');
+      try {
+        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.filePath}?ref=${CONFIG.branch}`, {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        const data = await res.json();
+        const json = JSON.parse(atob(data.content));
+        
+        json.products.splice(index, 1);
+        
+        const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.filePath}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
+          body: JSON.stringify({
+            message: `admin: delete ${title}`,
+            content: btoa(JSON.stringify(json, null, 2)),
+            sha: data.sha,
+            branch: CONFIG.branch
+          })
+        });
+        
+        if (updateRes.ok) {
+          showSuccess();
+          loadProducts(token);
+        } else {
+          const err = await updateRes.json();
+          showError('Ошибка: ' + (err.message || 'Неизвестная'));
+        }
+      } catch (e) { showError('Ошибка: ' + e.message); }
+    }
+
+    // 🛡 Утилиты
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-block');
+      el.textContent = '⚠️ ' + msg;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    function showSuccess() {
+      const el = document.getElementById('success-block');
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 3000);
+    }
+
+    // 🚀 Запуск
+    document.addEventListener('DOMContentLoaded', handleAuth);
+  </script>
+</body>
+</html>
