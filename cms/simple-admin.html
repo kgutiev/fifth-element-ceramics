@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Админка — Fifth Element Ceramics</title>
   <style>
-    :root { --bg: #fff; --text: #1a1a1a; --card: #f6f8fa; --border: #d0d7de; --primary: #2ea44f; --danger: #cf222e; --link: #0969da; --tab-active: #0969da; }
-    @media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --text: #e6edf3; --card: #161b22; --border: #30363d; --primary: #238636; --danger: #f85149; --link: #58a6ff; --tab-active: #58a6ff; } }
+    :root { --bg: #fff; --text: #1a1a1a; --card: #f6f8fa; --border: #d0d7de; --primary: #2ea44f; --danger: #cf222e; --link: #0969da; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --text: #e6edf3; --card: #161b22; --border: #30363d; --primary: #238636; --danger: #f85149; --link: #58a6ff; } }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 2rem; line-height: 1.5; }
     .container { max-width: 1000px; margin: 0 auto; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
-    input, select, textarea { width: 100%; padding: 0.5rem; margin: 0.25rem 0; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
-    textarea { min-height: 80px; resize: vertical; }
+    input, select { width: 100%; padding: 0.5rem; margin: 0.25rem 0 0.5rem; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
     button { background: var(--primary); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500; }
     button:hover { opacity: 0.9; }
     button.danger { background: var(--danger); }
@@ -20,37 +19,26 @@
     .hidden { display: none !important; }
     .error { background: #ffebe9; color: var(--danger); padding: 1rem; border-radius: 6px; margin: 1rem 0; border: 1px solid #ffcecb; }
     .success { background: #dafbe1; color: #1a7f37; padding: 1rem; border-radius: 6px; margin: 1rem 0; border: 1px solid #4ac26b; }
-    
-    /* Tabs */
     .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
     .tab { padding: 0.5rem 1rem; border: none; background: transparent; color: var(--text); cursor: pointer; border-radius: 6px 6px 0 0; font-weight: 500; }
     .tab:hover { background: var(--card); }
-    .tab.active { background: var(--tab-active); color: #fff; }
+    .tab.active { background: var(--link); color: #fff; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    
-    /* Products grid */
     .product-grid { display: grid; gap: 1rem; }
     @media (min-width: 768px) { .product-grid { grid-template-columns: 1fr 1fr; } }
-    .product-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem; }
+    .product-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem; gap: 1rem; }
     .product-title { font-weight: 600; font-size: 1.1rem; margin: 0; }
     .product-info { color: #666; font-size: 0.9rem; margin: 0.25rem 0; }
     .actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
-    
-    /* Featured list */
     .featured-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.5rem; }
     .featured-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee; }
-    .featured-item-info { flex: 1; }
-    .featured-controls { display: flex; gap: 0.25rem; }
-    
-    /* Contacts form */
     .contact-grid { display: grid; gap: 1rem; }
     @media (min-width: 600px) { .contact-grid { grid-template-columns: 1fr 1fr; } }
-    
     a { color: var(--link); text-decoration: none; }
-    a:hover { text-decoration: underline; }
     .loading { text-align: center; padding: 2rem; color: #666; }
     .small { font-size: 0.85rem; color: #666; }
+    .img-preview { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; background: #eee; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
@@ -63,22 +51,16 @@
       </div>
     </div>
 
-    <!-- Вход -->
     <div id="login-block" class="card">
       <h2>Вход</h2>
       <p>Для редактирования авторизуйтесь через GitHub.</p>
       <button onclick="login()">🔐 Войти через GitHub</button>
-      <p class="small" style="margin-top:1rem">
-        Приложение: <strong>Fifth Element Admin</strong><br>
-        Репозиторий: <strong>kgutiev/fifth-element-ceramics</strong>
-      </p>
+      <p class="small" style="margin-top:1rem">Приложение: <strong>Fifth Element Admin</strong></p>
     </div>
 
-    <!-- Ошибки / Успех -->
     <div id="error-block" class="error hidden"></div>
     <div id="success-block" class="success hidden">✅ Сохранено! <a href="https://5elementceramics.ru/" target="_blank">Посмотреть сайт</a></div>
 
-    <!-- Вкладки -->
     <div id="app-block" class="hidden">
       <div class="tabs">
         <button class="tab active" data-tab="products">📦 Товары</button>
@@ -86,7 +68,6 @@
         <button class="tab" data-tab="contacts">📞 Контакты</button>
       </div>
 
-      <!-- Вкладка: Товары -->
       <div id="tab-products" class="tab-content active">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
           <h2>Все товары (<span id="count">0</span>)</h2>
@@ -95,40 +76,23 @@
         <div id="products-list" class="product-grid"></div>
       </div>
 
-      <!-- Вкладка: Избранное -->
       <div id="tab-featured" class="tab-content">
         <h2>Избранные товары на главной</h2>
-        <p class="small">Выберите товары, которые будут показаны на главной странице. Они берутся из общего каталога.</p>
+        <p class="small">Выберите товары, которые будут показаны на главной странице.</p>
         <div id="featured-list" style="margin-top:1rem"></div>
         <button onclick="saveFeatured()" style="margin-top:1rem">💾 Сохранить избранное</button>
       </div>
 
-      <!-- Вкладка: Контакты -->
       <div id="tab-contacts" class="tab-content">
         <h2>Контакты</h2>
         <p class="small">Эти данные отображаются в футере сайта.</p>
         <div class="card" style="margin-top:1rem">
           <div class="contact-grid">
-            <div>
-              <label>📍 Город</label>
-              <input type="text" id="contact-city" placeholder="Сочи / Москва">
-            </div>
-            <div>
-              <label>📞 Телефон</label>
-              <input type="text" id="contact-phone" placeholder="+7 (999) 123-45-67">
-            </div>
-            <div>
-              <label>✉️ Email</label>
-              <input type="email" id="contact-email" placeholder="hello@5elementceramics.ru">
-            </div>
-            <div>
-              <label>📷 Instagram</label>
-              <input type="url" id="contact-instagram" placeholder="https://instagram.com/...">
-            </div>
-            <div>
-              <label>✈️ Telegram</label>
-              <input type="url" id="contact-telegram" placeholder="https://t.me/...">
-            </div>
+            <div><label>📍 Город</label><input type="text" id="contact-city"></div>
+            <div><label>📞 Телефон</label><input type="text" id="contact-phone"></div>
+            <div><label>✉️ Email</label><input type="email" id="contact-email"></div>
+            <div><label>📷 Instagram</label><input type="url" id="contact-instagram"></div>
+            <div><label>✈️ Telegram</label><input type="url" id="contact-telegram"></div>
           </div>
           <button onclick="saveContacts()" style="margin-top:1rem">💾 Сохранить контакты</button>
         </div>
@@ -137,7 +101,6 @@
   </div>
 
   <script>
-    // ⚙️ КОНФИГУРАЦИЯ
     const CONFIG = {
       clientId: 'Ov23liPIQAvQTIDuqmdL',
       repo: 'kgutiev/fifth-element-ceramics',
@@ -146,13 +109,13 @@
       homepagePath: 'data/homepage.json'
     };
 
-    // 🔐 Авторизация
     function login() {
       const redirect = encodeURIComponent(window.location.href.split('?')[0]);
       window.location.href = `https://github.com/login/oauth/authorize?client_id=${CONFIG.clientId}&redirect_uri=${redirect}&scope=repo`;
     }
     function logout() { localStorage.removeItem('gh_token'); window.location.reload(); }
 
+    // 🔐 Авторизация
     async function handleAuth() {
       const url = new URL(window.location.href);
       const code = url.searchParams.get('code');
@@ -175,15 +138,15 @@
             document.getElementById('login-block').classList.add('hidden');
             document.getElementById('user-block').classList.remove('hidden');
             document.getElementById('app-block').classList.remove('hidden');
+            setupTabs();
             await loadProducts(token);
             await loadHomepage(token);
-            setupTabs();
           } else { showError('Неверный токен'); localStorage.removeItem('gh_token'); }
-        } catch(e) { showError('Ошибка: ' + e.message); }
+        } catch(e) { showError('Ошибка сети: ' + e.message); }
       }
     }
 
-    // 🗂 Переключение вкладок
+    // 🗂 Вкладки
     function setupTabs() {
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -195,7 +158,7 @@
       });
     }
 
-    // 🔤 UTF-8 helpers для base64
+    // 🔤 UTF-8 helpers
     function decodeUTF8Base64(b64) {
       const binary = window.atob(b64);
       const bytes = new Uint8Array(binary.length);
@@ -209,12 +172,15 @@
       for (const byte of encoded) binary += String.fromCharCode(byte);
       return window.btoa(binary);
     }
+    function toAbsoluteUrl(path) {
+      if (!path) return '';
+      return path.startsWith('http') ? path : `https://5elementceramics.ru/${path.replace(/^\.\//, '')}`;
+    }
 
     // 📦 Загрузка товаров
     async function loadProducts(token) {
       if (!token) token = localStorage.getItem('gh_token');
-      const list = document.getElementById('products-list');
-      list.innerHTML = '<p class="loading">Загрузка...</p>';
+      document.getElementById('products-list').innerHTML = '<p class="loading">Загрузка...</p>';
       try {
         const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
@@ -225,14 +191,13 @@
         window.productsSha = data.sha;
         window.productsData = content;
         renderProducts(content.products || []);
-        renderFeaturedOptions(content.products || []);
-      } catch(e) { list.innerHTML = `<p class="error">❌ ${e.message}</p>`; }
+      } catch(e) { document.getElementById('products-list').innerHTML = `<p class="error">❌ ${e.message}</p>`; }
     }
 
     function renderProducts(products) {
       const list = document.getElementById('products-list');
       document.getElementById('count').textContent = products.length;
-      if (!products.length) { list.innerHTML = '<p class="small">Товаров нет</p>'; return; }
+      if (!products.length) { list.innerHTML = '<p class="small">Товаров нет. Добавьте их через GitHub или вручную в products.json</p>'; return; }
       list.innerHTML = products.map((p, i) => `
         <div class="card">
           <div class="product-header">
@@ -240,8 +205,10 @@
               <h3 class="product-title">${escapeHtml(p.title)}</h3>
               <p class="product-info small">${escapeHtml(p.info || '')}</p>
             </div>
-            <img src="${escapeHtml(p.image || '')}" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:4px;background:#eee">
+            <img src="${toAbsoluteUrl(p.image)}" alt="" class="img-preview" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>📷</text></svg>'">
           </div>
+          <label class="small">Путь к фото</label>
+          <input type="text" id="img-${i}" value="${escapeHtml(p.image || '')}">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
             <div><label class="small">Цена (₽)</label><input type="number" id="price-${i}" value="${p.price}" min="0"></div>
             <div><label class="small">Статус</label><select id="status-${i}">${['В наличии','Продано','Под заказ'].map(s => `<option value="${s}"${p.status===s?' selected':''}>${s}</option>`).join('')}</select></div>
@@ -256,6 +223,7 @@
 
     async function saveProduct(index, title) {
       const token = localStorage.getItem('gh_token');
+      const img = document.getElementById(`img-${index}`).value.trim();
       const price = document.getElementById(`price-${index}`).value;
       const status = document.getElementById(`status-${index}`).value;
       try {
@@ -264,6 +232,7 @@
         });
         const data = await res.json();
         const json = JSON.parse(decodeUTF8Base64(data.content));
+        json.products[index].image = img;
         json.products[index].price = Number(price);
         json.products[index].status = status;
         const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
@@ -296,128 +265,106 @@
       } catch(e) { showError(e.message); }
     }
 
-    // ⭐ Избранное (загрузка + рендер + сохранение)
+    // ⭐ & 📞 Загрузка homepage.json
     async function loadHomepage(token) {
       if (!token) token = localStorage.getItem('gh_token');
       try {
         const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
+        if (res.status === 404) {
+          // Если файла нет, создаём дефолтный
+          window.homepageData = { featured: [], contacts: { city: 'Сочи / Москва', phone: '', email: '', instagram: 'https://www.instagram.com/fifthelement.ceramics', telegram: '' } };
+          await saveHomepageData(window.homepageData, 'init homepage.json');
+          return;
+        }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const content = JSON.parse(decodeUTF8Base64(data.content));
         window.homepageSha = data.sha;
-        window.homepageData = content;
-        renderFeatured(content.featured || [], content.contacts || {});
-        renderContacts(content.contacts || {});
-      } catch(e) { console.error('Homepage load error:', e); }
+        window.homepageData = JSON.parse(decodeUTF8Base64(data.content));
+        renderFeaturedList();
+        renderContactsForm();
+      } catch(e) { console.error('Homepage load error:', e); showError('Не удалось загрузить homepage.json'); }
     }
 
-    function renderFeaturedOptions(allProducts) {
-      // Для вкладки "Избранное" — показываем все товары с чекбоксами
+    function renderFeaturedList() {
       const list = document.getElementById('featured-list');
-      const featured = (window.homepageData?.featured) || [];
-      const featuredIds = featured.map(f => f.title);
-      
-      if (!allProducts.length) { list.innerHTML = '<p class="small">Сначала добавьте товары в каталог</p>'; return; }
-      
-      list.innerHTML = allProducts.map(p => {
-        const isFeatured = featuredIds.includes(p.title);
+      const featured = window.homepageData?.featured || [];
+      const all = window.productsData?.products || [];
+      if (!all.length) { list.innerHTML = '<p class="small">Сначала добавьте товары</p>'; return; }
+      list.innerHTML = all.map(p => {
+        const isFeatured = featured.some(f => f.title === p.title);
         return `
           <div class="featured-item">
-            <img src="${escapeHtml(p.image || '')}" alt="">
-            <div class="featured-item-info">
-              <strong>${escapeHtml(p.title)}</strong>
-              <div class="small">${escapeHtml(p.info || '')}</div>
-            </div>
-            <div class="featured-controls">
-              <button class="${isFeatured ? 'danger' : 'secondary'}" onclick="toggleFeatured('${escapeHtml(p.title)}', ${!isFeatured})">
-                ${isFeatured ? '✕ Убрать' : '+ Добавить'}
-              </button>
-            </div>
+            <img src="${toAbsoluteUrl(p.image)}" alt="">
+            <div style="flex:1"><strong>${escapeHtml(p.title)}</strong><div class="small">${escapeHtml(p.info || '')}</div></div>
+            <button class="${isFeatured ? 'danger' : 'secondary'}" onclick="toggleFeatured('${escapeHtml(p.title)}', ${!isFeatured})">
+              ${isFeatured ? '✕ Убрать' : '+ Добавить'}
+            </button>
           </div>
         `;
       }).join('');
     }
 
     function toggleFeatured(title, add) {
-      const featured = window.homepageData?.featured || [];
+      const featured = window.homepageData.featured || [];
       if (add) {
-        // Найти товар в полном каталоге и добавить в избранное
-        const product = (window.productsData?.products || []).find(p => p.title === title);
-        if (product && !featured.some(f => f.title === title)) {
-          featured.push({ title: product.title, info: product.info, price: product.price, height: product.height, image: product.image });
-        }
+        const p = (window.productsData?.products || []).find(x => x.title === title);
+        if (p && !featured.some(f => f.title === p.title)) featured.push({ ...p });
       } else {
-        // Удалить из избранного
         const idx = featured.findIndex(f => f.title === title);
         if (idx >= 0) featured.splice(idx, 1);
       }
       window.homepageData.featured = featured;
-      renderFeaturedOptions(window.productsData?.products || []);
+      renderFeaturedList();
     }
 
     async function saveFeatured() {
-      const token = localStorage.getItem('gh_token');
-      const content = window.homepageData || { featured: [], contacts: {} };
-      try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}?ref=${CONFIG.branch}`, {
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-        });
-        const data = await res.json();
-        const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}`, {
-          method: 'PUT',
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-          body: JSON.stringify({ message: 'admin: update featured', content: encodeUTF8Base64(JSON.stringify(content, null, 2)), sha: data.sha, branch: CONFIG.branch })
-        });
-        if (updateRes.ok) { showSuccess(); loadHomepage(token); }
-        else { const err = await updateRes.json(); showError(err.message || 'Ошибка'); }
-      } catch(e) { showError(e.message); }
+      await saveHomepageData(window.homepageData, 'admin: update featured');
     }
 
-    // 📞 Контакты
-    function renderContacts(contacts) {
-      document.getElementById('contact-city').value = contacts.city || '';
-      document.getElementById('contact-phone').value = contacts.phone || '';
-      document.getElementById('contact-email').value = contacts.email || '';
-      document.getElementById('contact-instagram').value = contacts.instagram || '';
-      document.getElementById('contact-telegram').value = contacts.telegram || '';
+    function renderContactsForm() {
+      const c = window.homepageData?.contacts || {};
+      document.getElementById('contact-city').value = c.city || '';
+      document.getElementById('contact-phone').value = c.phone || '';
+      document.getElementById('contact-email').value = c.email || '';
+      document.getElementById('contact-instagram').value = c.instagram || '';
+      document.getElementById('contact-telegram').value = c.telegram || '';
     }
 
     async function saveContacts() {
-      const token = localStorage.getItem('gh_token');
-      const contacts = {
-        city: document.getElementById('contact-city').value,
-        phone: document.getElementById('contact-phone').value,
-        email: document.getElementById('contact-email').value,
-        instagram: document.getElementById('contact-instagram').value,
-        telegram: document.getElementById('contact-telegram').value
+      window.homepageData.contacts = {
+        city: document.getElementById('contact-city').value.trim(),
+        phone: document.getElementById('contact-phone').value.trim(),
+        email: document.getElementById('contact-email').value.trim(),
+        instagram: document.getElementById('contact-instagram').value.trim(),
+        telegram: document.getElementById('contact-telegram').value.trim()
       };
-      const content = window.homepageData || { featured: [], contacts: {} };
-      content.contacts = contacts;
+      await saveHomepageData(window.homepageData, 'admin: update contacts');
+    }
+
+    async function saveHomepageData(data, message) {
+      const token = localStorage.getItem('gh_token');
       try {
         const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
-        const data = await res.json();
+        const sha = res.ok ? (await res.json()).sha : null;
         const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}`, {
           method: 'PUT',
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-          body: JSON.stringify({ message: 'admin: update contacts', content: encodeUTF8Base64(JSON.stringify(content, null, 2)), sha: data.sha, branch: CONFIG.branch })
+          body: JSON.stringify({ message, content: encodeUTF8Base64(JSON.stringify(data, null, 2)), sha, branch: CONFIG.branch })
         });
         if (updateRes.ok) { showSuccess(); loadHomepage(token); }
         else { const err = await updateRes.json(); showError(err.message || 'Ошибка'); }
       } catch(e) { showError(e.message); }
     }
 
-    // 🛡 Утилиты
     function escapeHtml(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
     function showError(msg) { const el = document.getElementById('error-block'); el.textContent = '⚠️ ' + msg; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 5000); }
     function showSuccess() { const el = document.getElementById('success-block'); el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3000); }
 
-    // 🚀 Запуск
     document.addEventListener('DOMContentLoaded', handleAuth);
   </script>
 </body>
 </html>
-
