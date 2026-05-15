@@ -44,6 +44,13 @@
     .img-controls input[type="text"] { flex: 1; margin: 0; font-size: 0.85rem; }
     .upload-btn { padding: 0.35rem 0.6rem; font-size: 0.85rem; white-space: nowrap; }
     .upload-status { font-size: 0.8rem; margin-top: 0.25rem; min-height: 1.2rem; }
+    
+    /* Modal */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: var(--card); padding: 1.5rem; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); }
+    .modal-content h3 { margin-top: 0; }
+    .modal-content label { font-size: 0.85rem; color: #666; margin-top: 0.5rem; display: block; }
+    .modal-content input, .modal-content select { margin-bottom: 0.5rem; }
   </style>
 </head>
 <body>
@@ -76,7 +83,10 @@
       <div id="tab-products" class="tab-content active">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
           <h2>Все товары (<span id="count">0</span>)</h2>
-          <button class="secondary" onclick="loadProducts()">🔄 Обновить</button>
+          <div style="display:flex;gap:0.5rem">
+            <button class="secondary" onclick="openAddModal()">➕ Добавить</button>
+            <button onclick="loadProducts()">🔄 Обновить</button>
+          </div>
         </div>
         <div id="products-list" class="product-grid"></div>
       </div>
@@ -102,6 +112,42 @@
           <button onclick="saveContacts()" style="margin-top:1rem">💾 Сохранить контакты</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно добавления товара -->
+  <div id="add-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>➕ Добавить новый товар</h3>
+      <form id="add-form" onsubmit="handleAddProduct(event)">
+        <label>Название *</label><input type="text" id="new-title" required placeholder="Ваза «Терра»">
+        <label>Описание *</label><input type="text" id="new-info" required placeholder="Каменная масса G&S 254...">
+        <label>Цена (₽) *</label><input type="number" id="new-price" required min="0" placeholder="8500">
+        <label>Размер</label><input type="text" id="new-height" placeholder="В. 28 см">
+        <label>Категория</label>
+        <select id="new-category">
+          <option value="vases">Вазы</option>
+          <option value="pots">Посуда</option>
+          <option value="decor">Декор</option>
+        </select>
+        <label>Статус</label>
+        <select id="new-status">
+          <option value="В наличии">В наличии</option>
+          <option value="Продано">Продано</option>
+          <option value="Под заказ">Под заказ</option>
+        </select>
+        <label>Фото</label>
+        <div class="img-controls">
+          <input type="file" id="new-file" accept="image/*" style="display:none" onchange="handleNewImageSelect(this)">
+          <button type="button" onclick="document.getElementById('new-file').click()" class="secondary upload-btn">📷 Выбрать файл</button>
+          <input type="text" id="new-image" placeholder="./assets/uploads/...">
+        </div>
+        <div id="new-upload-status" class="upload-status"></div>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem">
+          <button type="submit">✅ Добавить</button>
+          <button type="button" class="danger" onclick="closeAddModal()">Отмена</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -203,7 +249,7 @@
     function renderProducts(products) {
       const list = document.getElementById('products-list');
       document.getElementById('count').textContent = products.length;
-      if (!products.length) { list.innerHTML = '<p class="small">Товаров нет. Добавьте их через GitHub или вручную в products.json</p>'; return; }
+      if (!products.length) { list.innerHTML = '<p class="small">Товаров нет. Нажмите «➕ Добавить»</p>'; return; }
       list.innerHTML = products.map((p, i) => `
         <div class="card">
           <div class="product-header">
@@ -231,7 +277,7 @@
       `).join('');
     }
 
-    // 📤 Загрузка изображения на GitHub
+    // 📤 Загрузка изображения (редактирование)
     async function handleImageSelect(index, input) {
       const file = input.files[0];
       if (!file) return;
@@ -242,10 +288,8 @@
       const statusEl = document.getElementById(`upload-status-${index}`);
       const previewEl = document.getElementById(`preview-${index}`);
       const imgInput = document.getElementById(`img-${index}`);
-      
       statusEl.textContent = '⏳ Загрузка на сервер...';
       input.disabled = true;
-
       try {
         const token = localStorage.getItem('gh_token');
         const reader = new FileReader();
@@ -253,20 +297,12 @@
           const base64 = e.target.result.split(',')[1];
           const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
           const path = `${CONFIG.uploadDir}/${fileName}`;
-
-          // Попробуем загрузить
           const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${path}`, {
             method: 'PUT',
             headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-            body: JSON.stringify({
-              message: `admin: upload image ${fileName}`,
-              content: base64,
-              branch: CONFIG.branch
-            })
+            body: JSON.stringify({ message: `admin: upload image ${fileName}`, content: base64, branch: CONFIG.branch })
           });
-
           if (res.ok) {
-            const data = await res.json();
             const newPath = `./assets/uploads/${fileName}`;
             imgInput.value = newPath;
             previewEl.src = toAbsoluteUrl(newPath);
@@ -278,11 +314,7 @@
           }
         };
         reader.readAsDataURL(file);
-      } catch(err) {
-        statusEl.textContent = `❌ Ошибка сети: ${err.message}`;
-      } finally {
-        input.disabled = false;
-      }
+      } catch(err) { statusEl.textContent = `❌ Ошибка сети: ${err.message}`; } finally { input.disabled = false; }
     }
 
     async function saveProduct(index, title) {
@@ -327,6 +359,91 @@
         if (updateRes.ok) { showSuccess(); loadProducts(token); loadHomepage(token); }
         else { const err = await updateRes.json(); showError(err.message || 'Ошибка'); }
       } catch(e) { showError(e.message); }
+    }
+
+    // ➕ Добавление нового товара
+    let newImageBase64 = null;
+    let newImageFileName = '';
+
+    function openAddModal() { document.getElementById('add-modal').classList.remove('hidden'); }
+    function closeAddModal() {
+      document.getElementById('add-modal').classList.add('hidden');
+      document.getElementById('add-form').reset();
+      newImageBase64 = null;
+      newImageFileName = '';
+      document.getElementById('new-upload-status').textContent = '';
+    }
+
+    function handleNewImageSelect(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        document.getElementById('new-upload-status').textContent = '❌ Файл слишком большой (макс. 5МБ)';
+        return;
+      }
+      const statusEl = document.getElementById('new-upload-status');
+      statusEl.textContent = '⏳ Подготовка...';
+      input.disabled = true;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        newImageBase64 = e.target.result.split(',')[1];
+        newImageFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        document.getElementById('new-image').value = `./assets/uploads/${newImageFileName}`;
+        statusEl.textContent = '✅ Готово к загрузке при добавлении';
+        statusEl.style.color = 'var(--primary)';
+      };
+      reader.readAsDataURL(file);
+      input.disabled = false;
+    }
+
+    async function handleAddProduct(e) {
+      e.preventDefault();
+      const token = localStorage.getItem('gh_token');
+      const title = document.getElementById('new-title').value.trim();
+      const info = document.getElementById('new-info').value.trim();
+      const price = Number(document.getElementById('new-price').value);
+      const height = document.getElementById('new-height').value.trim();
+      const category = document.getElementById('new-category').value;
+      const status = document.getElementById('new-status').value;
+      let image = document.getElementById('new-image').value.trim();
+      const statusEl = document.getElementById('new-upload-status');
+
+      if (!title || !info || isNaN(price)) { showError('Заполните название, описание и цену'); return; }
+      statusEl.textContent = '⏳ Сохранение...';
+
+      try {
+        // 1. Загрузка фото, если выбрано
+        if (newImageBase64) {
+          const path = `${CONFIG.uploadDir}/${newImageFileName}`;
+          const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${path}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
+            body: JSON.stringify({ message: `admin: add image for ${title}`, content: newImageBase64, branch: CONFIG.branch })
+          });
+          if (!res.ok) throw new Error('Ошибка загрузки фото');
+          image = `./assets/uploads/${newImageFileName}`;
+        }
+
+        // 2. Чтение текущего каталога
+        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        const data = await res.json();
+        const json = JSON.parse(decodeUTF8Base64(data.content));
+
+        // 3. Добавление товара
+        json.products.push({ title, info, price, height, image, category, status });
+
+        // 4. Коммит
+        const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
+          body: JSON.stringify({ message: `admin: add product ${title}`, content: encodeUTF8Base64(JSON.stringify(json, null, 2)), sha: data.sha, branch: CONFIG.branch })
+        });
+
+        if (updateRes.ok) { showSuccess(); closeAddModal(); loadProducts(token); loadHomepage(token); }
+        else { const err = await updateRes.json(); showError(err.message || 'Ошибка сохранения'); }
+      } catch(e) { showError(e.message); } finally { statusEl.textContent = ''; }
     }
 
     // ⭐ & 📞 Загрузка homepage.json
@@ -382,10 +499,7 @@
       renderFeaturedList();
     }
 
-    async function saveFeatured() {
-      await saveHomepageData(window.homepageData, 'admin: update featured');
-    }
-
+    async function saveFeatured() { await saveHomepageData(window.homepageData, 'admin: update featured'); }
     function renderContactsForm() {
       const c = window.homepageData?.contacts || {};
       document.getElementById('contact-city').value = c.city || '';
@@ -394,7 +508,6 @@
       document.getElementById('contact-instagram').value = c.instagram || '';
       document.getElementById('contact-telegram').value = c.telegram || '';
     }
-
     async function saveContacts() {
       window.homepageData.contacts = {
         city: document.getElementById('contact-city').value.trim(),
@@ -405,7 +518,6 @@
       };
       await saveHomepageData(window.homepageData, 'admin: update contacts');
     }
-
     async function saveHomepageData(data, message) {
       const token = localStorage.getItem('gh_token');
       try {
