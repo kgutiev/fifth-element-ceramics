@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><title>Test</title></head>
+<body>
+  <h1>✅ Если вы это видите — сервер работает чисто.</h1>
+  <p>Редирект на Netlify вызывается JavaScript'ом в index.html.</p>
+  <script>
+    console.log('✅ test.html loaded. No redirect.');
+    // Если эта страница перенаправит на Netlify — проблема на уровне CDN/регистратора.
+    // Если нет — проблема в коде /cms/index.html или библиотеке Decap CMS.
+  </script>
+</body>
+</html>
