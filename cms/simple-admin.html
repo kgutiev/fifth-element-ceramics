@@ -136,12 +136,12 @@
           <option value="Продано">Продано</option>
           <option value="Под заказ">Под заказ</option>
         </select>
-        <label>Фото</label>
+        <label>Медиа (фото / видео)</label>
         <div class="img-controls">
-          <input type="file" id="new-file" accept="image/*" style="display:none" onchange="handleNewImageSelect(this)">
-          <button type="button" onclick="document.getElementById('new-file').click()" class="secondary upload-btn">📷 Выбрать файл</button>
-          <input type="text" id="new-image" placeholder="./assets/uploads/...">
+          <input type="file" id="new-file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" multiple style="display:none">
+          <button type="button" onclick="document.getElementById('new-file').click()" class="secondary upload-btn">📷 Выбрать файлы</button>
         </div>
+        <div id="new-media-preview" style="margin:0.5rem 0"></div>
         <div id="new-upload-status" class="upload-status"></div>
         <div style="display:flex; gap:0.5rem; margin-top:1rem">
           <button type="submit">✅ Добавить</button>
@@ -158,8 +158,56 @@
       branch: 'main',
       productsPath: 'data/products.json',
       homepagePath: 'data/homepage.json',
-      uploadDir: 'assets/uploads'
+      uploadDir: 'assets/uploads',
+      maxImageSize: 5 * 1024 * 1024,
+      maxVideoSize: 15 * 1024 * 1024,
+      allowedImageTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+      allowedVideoTypes: ['video/mp4', 'video/webm']
     };
+
+    async function githubFetch(url, options = {}, retries = 3) {
+      for (let attempt = 0; attempt < retries; attempt++) {
+        const res = await fetch(url, options);
+        if (res.status === 403 && res.headers.get('X-RateLimit-Remaining') === '0' && attempt < retries - 1) {
+          const reset = parseInt(res.headers.get('X-RateLimit-Reset') || '0', 10);
+          const wait = reset ? Math.max(reset * 1000 - Date.now(), 1000) : 30000;
+          await new Promise(r => setTimeout(r, Math.min(wait, 60000)));
+          continue;
+        }
+        if (res.status >= 500 && attempt < retries - 1) {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+        return res;
+      }
+      return fetch(url, options);
+    }
+
+    function parseGitHubError(res, body) {
+      if (res.status === 404) return 'Файл не найден (404)';
+      if (res.status === 403) return 'Доступ запрещён — проверьте токен и права repo (403)';
+      if (res.status === 422) return body?.message || 'Конфликт версий — обновите страницу (422)';
+      return body?.message || `HTTP ${res.status}`;
+    }
+
+    function normalizeMedia(product) {
+      if (Array.isArray(product.media) && product.media.length) return [...product.media];
+      if (product.image) return [{ type: 'image', src: product.image }];
+      return [];
+    }
+
+    function getFirstImageSrc(media) {
+      const img = media.find(m => m.type === 'image') || media[0];
+      return img ? img.src : '';
+    }
+
+    function isAllowedFile(file) {
+      const all = [...CONFIG.allowedImageTypes, ...CONFIG.allowedVideoTypes];
+      if (!all.includes(file.type)) return 'Неподдерживаемый формат: ' + file.type;
+      const max = CONFIG.allowedVideoTypes.includes(file.type) ? CONFIG.maxVideoSize : CONFIG.maxImageSize;
+      if (file.size > max) return `Файл слишком большой (макс. ${Math.round(max / 1024 / 1024)} МБ)`;
+      return null;
+    }
 
     function login() {
       const redirect = encodeURIComponent(window.location.href.split('?')[0]);
@@ -182,7 +230,7 @@
       const token = localStorage.getItem('gh_token');
       if (token) {
         try {
-          const res = await fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } });
+          const res = await githubFetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } });
           if (res.ok) {
             const user = await res.json();
             document.getElementById('user-name').textContent = `@${user.login}`;
@@ -234,35 +282,52 @@
       if (!token) token = localStorage.getItem('gh_token');
       document.getElementById('products-list').innerHTML = '<p class="loading">Загрузка...</p>';
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
+        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(parseGitHubError(res, await res.json().catch(() => ({}))));
         const data = await res.json();
         const content = JSON.parse(decodeUTF8Base64(data.content));
         window.productsSha = data.sha;
         window.productsData = content;
         renderProducts(content.products || []);
-      } catch(e) { document.getElementById('products-list').innerHTML = `<p class="error">❌ ${e.message}</p>`; }
+      } catch(e) { document.getElementById('products-list').innerHTML = `<p class="error">❌ ${escapeHtml(e.message)}</p>`; }
+    }
+
+    function renderMediaPreview(item) {
+      const url = toAbsoluteUrl(item.src);
+      if (item.type === 'video') {
+        return `<video src="${escapeHtml(url)}" class="img-preview" muted playsinline preload="metadata"></video>`;
+      }
+      return `<img src="${escapeHtml(url)}" alt="" class="img-preview">`;
     }
 
     function renderProducts(products) {
       const list = document.getElementById('products-list');
       document.getElementById('count').textContent = products.length;
       if (!products.length) { list.innerHTML = '<p class="small">Товаров нет. Нажмите «➕ Добавить»</p>'; return; }
-      list.innerHTML = products.map((p, i) => `
-        <div class="card">
+      list.innerHTML = products.map((p, i) => {
+        const media = normalizeMedia(p);
+        const mediaItems = media.map((m, mi) => `
+          <div class="featured-item" style="padding:0.5rem;margin-bottom:0.25rem">
+            ${renderMediaPreview(m)}
+            <span class="small" style="flex:1;word-break:break-all">${escapeHtml(m.src)}</span>
+            <button type="button" class="danger upload-btn" data-action="remove-media" data-index="${i}" data-media="${mi}">✕</button>
+          </div>
+        `).join('');
+        return `
+        <div class="card" data-product-index="${i}">
           <div class="product-header">
             <div>
               <h3 class="product-title">${escapeHtml(p.title)}</h3>
               <p class="product-info small">${escapeHtml(p.info || '')}</p>
             </div>
-            <img src="${toAbsoluteUrl(p.image)}" alt="" class="img-preview" id="preview-${i}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>📷</text></svg>'">
+            ${media.length ? renderMediaPreview(media[0]) : ''}
           </div>
+          <div id="media-list-${i}" style="margin:0.5rem 0">${mediaItems || '<p class="small">Медиа не добавлены</p>'}</div>
           <div class="img-controls">
-            <input type="file" id="file-${i}" accept="image/*" style="display:none" onchange="handleImageSelect(${i}, this)">
-            <button type="button" onclick="document.getElementById('file-${i}').click()" class="secondary upload-btn">📷 Выбрать файл</button>
-            <input type="text" id="img-${i}" value="${escapeHtml(p.image || '')}" placeholder="или вставьте путь">
+            <input type="file" id="file-${i}" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" multiple style="display:none">
+            <button type="button" class="secondary upload-btn" data-action="pick-media" data-index="${i}">📷 Добавить файлы</button>
           </div>
           <div id="upload-status-${i}" class="upload-status"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
@@ -270,131 +335,171 @@
             <div><label class="small">Статус</label><select id="status-${i}">${['В наличии','Продано','Под заказ'].map(s => `<option value="${s}"${p.status===s?' selected':''}>${s}</option>`).join('')}</select></div>
           </div>
           <div class="actions">
-            <button onclick="saveProduct(${i}, '${escapeHtml(p.title)}')">💾 Сохранить</button>
-            <button class="danger" onclick="deleteProduct(${i}, '${escapeHtml(p.title)}')">🗑 Удалить</button>
+            <button type="button" data-action="save" data-index="${i}">💾 Сохранить</button>
+            <button type="button" class="danger" data-action="delete" data-index="${i}">🗑 Удалить</button>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
+
+      list.querySelectorAll('[data-action="pick-media"]').forEach(btn => {
+        btn.addEventListener('click', () => document.getElementById('file-' + btn.dataset.index).click());
+      });
+      list.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', () => handleMediaSelect(Number(input.id.replace('file-', '')), input));
+      });
+      list.querySelectorAll('[data-action="save"]').forEach(btn => {
+        btn.addEventListener('click', () => saveProduct(Number(btn.dataset.index)));
+      });
+      list.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', () => deleteProduct(Number(btn.dataset.index)));
+      });
+      list.querySelectorAll('[data-action="remove-media"]').forEach(btn => {
+        btn.addEventListener('click', () => removeMediaItem(Number(btn.dataset.index), Number(btn.dataset.media)));
+      });
     }
 
-    // 📤 Загрузка изображения (редактирование)
-    async function handleImageSelect(index, input) {
-      const file = input.files[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) {
-        document.getElementById(`upload-status-${index}`).textContent = '❌ Файл слишком большой (макс. 5МБ)';
-        return;
-      }
-      const statusEl = document.getElementById(`upload-status-${index}`);
-      const previewEl = document.getElementById(`preview-${index}`);
-      const imgInput = document.getElementById(`img-${index}`);
-      statusEl.textContent = '⏳ Загрузка на сервер...';
-      input.disabled = true;
-      try {
-        const token = localStorage.getItem('gh_token');
+    function removeMediaItem(productIndex, mediaIndex) {
+      const product = window.productsData.products[productIndex];
+      const media = normalizeMedia(product);
+      media.splice(mediaIndex, 1);
+      product.media = media;
+      product.image = getFirstImageSrc(media);
+      renderProducts(window.productsData.products);
+    }
+
+    // 📤 Загрузка медиа (редактирование)
+    async function uploadFileToGitHub(file, token) {
+      const err = isAllowedFile(file);
+      if (err) throw new Error(err);
+      const base64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = async (e) => {
-          const base64 = e.target.result.split(',')[1];
-          const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-          const path = `${CONFIG.uploadDir}/${fileName}`;
-          const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${path}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-            body: JSON.stringify({ message: `admin: upload image ${fileName}`, content: base64, branch: CONFIG.branch })
-          });
-          if (res.ok) {
-            const newPath = `./assets/uploads/${fileName}`;
-            imgInput.value = newPath;
-            previewEl.src = toAbsoluteUrl(newPath);
-            statusEl.textContent = '✅ Фото загружено!';
-            statusEl.style.color = 'var(--primary)';
-          } else {
-            const err = await res.json();
-            statusEl.textContent = `❌ Ошибка: ${err.message || 'Сервер'}`;
-          }
-        };
+        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+        reader.onerror = () => reject(new Error('Ошибка чтения файла'));
         reader.readAsDataURL(file);
-      } catch(err) { statusEl.textContent = `❌ Ошибка сети: ${err.message}`; } finally { input.disabled = false; }
+      });
+      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const path = `${CONFIG.uploadDir}/${fileName}`;
+      const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${path}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
+        body: JSON.stringify({ message: `admin: upload ${fileName}`, content: base64, branch: CONFIG.branch })
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(parseGitHubError(res, body));
+      }
+      const type = CONFIG.allowedVideoTypes.includes(file.type) ? 'video' : 'image';
+      return { type, src: `./assets/uploads/${fileName}` };
     }
 
-    async function saveProduct(index, title) {
+    async function handleMediaSelect(index, input) {
+      const files = [...input.files];
+      if (!files.length) return;
+      const statusEl = document.getElementById(`upload-status-${index}`);
+      statusEl.textContent = '⏳ Загрузка...';
+      input.disabled = true;
       const token = localStorage.getItem('gh_token');
-      const img = document.getElementById(`img-${index}`).value.trim();
+      const product = window.productsData.products[index];
+      if (!product.media) product.media = normalizeMedia(product);
+      try {
+        for (const file of files) {
+          const item = await uploadFileToGitHub(file, token);
+          product.media.push(item);
+        }
+        product.image = getFirstImageSrc(product.media);
+        statusEl.textContent = '✅ Загружено: ' + files.length;
+        statusEl.style.color = 'var(--primary)';
+        renderProducts(window.productsData.products);
+      } catch(err) {
+        statusEl.textContent = '❌ ' + err.message;
+      } finally {
+        input.disabled = false;
+        input.value = '';
+      }
+    }
+
+    async function saveProduct(index) {
+      const token = localStorage.getItem('gh_token');
       const price = document.getElementById(`price-${index}`).value;
       const status = document.getElementById(`status-${index}`).value;
+      const product = window.productsData?.products?.[index];
+      const media = normalizeMedia(product);
+      const title = product?.title || 'товар';
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
+        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
+        if (!res.ok) throw new Error(parseGitHubError(res, await res.json().catch(() => ({}))));
         const data = await res.json();
         const json = JSON.parse(decodeUTF8Base64(data.content));
-        json.products[index].image = img;
+        json.products[index].media = media;
+        json.products[index].image = getFirstImageSrc(media);
         json.products[index].price = Number(price);
         json.products[index].status = status;
-        const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
+        const updateRes = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
           method: 'PUT',
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
           body: JSON.stringify({ message: `admin: update ${title}`, content: encodeUTF8Base64(JSON.stringify(json, null, 2)), sha: data.sha, branch: CONFIG.branch })
         });
         if (updateRes.ok) { showSuccess(); loadProducts(token); }
-        else { const err = await updateRes.json(); showError(err.message || 'Ошибка'); }
+        else { const err = await updateRes.json(); showError(parseGitHubError(updateRes, err)); }
       } catch(e) { showError(e.message); }
     }
 
-    async function deleteProduct(index, title) {
-      if (!confirm(`Удалить "${title}"?`)) return;
+    async function deleteProduct(index) {
+      const title = window.productsData?.products?.[index]?.title || 'товар';
+      if (!confirm(`Удалить «${title}»?`)) return;
       const token = localStorage.getItem('gh_token');
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
+        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
+        if (!res.ok) throw new Error(parseGitHubError(res, await res.json().catch(() => ({}))));
         const data = await res.json();
         const json = JSON.parse(decodeUTF8Base64(data.content));
         json.products.splice(index, 1);
-        const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
+        const updateRes = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
           method: 'PUT',
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
           body: JSON.stringify({ message: `admin: delete ${title}`, content: encodeUTF8Base64(JSON.stringify(json, null, 2)), sha: data.sha, branch: CONFIG.branch })
         });
         if (updateRes.ok) { showSuccess(); loadProducts(token); loadHomepage(token); }
-        else { const err = await updateRes.json(); showError(err.message || 'Ошибка'); }
+        else { const err = await updateRes.json(); showError(parseGitHubError(updateRes, err)); }
       } catch(e) { showError(e.message); }
     }
 
     // ➕ Добавление нового товара
-    let newImageBase64 = null;
-    let newImageFileName = '';
+    let newMediaQueue = [];
 
     function openAddModal() { document.getElementById('add-modal').classList.remove('hidden'); }
     function closeAddModal() {
       document.getElementById('add-modal').classList.add('hidden');
       document.getElementById('add-form').reset();
-      newImageBase64 = null;
-      newImageFileName = '';
+      newMediaQueue = [];
+      document.getElementById('new-media-preview').innerHTML = '';
       document.getElementById('new-upload-status').textContent = '';
     }
 
-    function handleNewImageSelect(input) {
-      const file = input.files[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) {
-        document.getElementById('new-upload-status').textContent = '❌ Файл слишком большой (макс. 5МБ)';
-        return;
-      }
+    document.getElementById('new-file').addEventListener('change', function() {
+      const preview = document.getElementById('new-media-preview');
       const statusEl = document.getElementById('new-upload-status');
-      statusEl.textContent = '⏳ Подготовка...';
-      input.disabled = true;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        newImageBase64 = e.target.result.split(',')[1];
-        newImageFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-        document.getElementById('new-image').value = `./assets/uploads/${newImageFileName}`;
-        statusEl.textContent = '✅ Готово к загрузке при добавлении';
-        statusEl.style.color = 'var(--primary)';
-      };
-      reader.readAsDataURL(file);
-      input.disabled = false;
-    }
+      for (const file of this.files) {
+        const err = isAllowedFile(file);
+        if (err) { statusEl.textContent = '❌ ' + err; continue; }
+        const type = CONFIG.allowedVideoTypes.includes(file.type) ? 'video' : 'image';
+        const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        newMediaQueue.push({ file, type, fileName, pending: true });
+        const url = URL.createObjectURL(file);
+        preview.insertAdjacentHTML('beforeend', `
+          <div class="featured-item" style="padding:0.5rem">
+            ${type === 'video' ? `<video src="${url}" class="img-preview" muted playsinline></video>` : `<img src="${url}" class="img-preview" alt="">`}
+            <span class="small" style="flex:1">${escapeHtml(file.name)}</span>
+          </div>
+        `);
+      }
+      statusEl.textContent = newMediaQueue.length ? `✅ ${newMediaQueue.length} файл(ов) готовы` : '';
+      this.value = '';
+    });
 
     async function handleAddProduct(e) {
       e.preventDefault();
@@ -405,44 +510,39 @@
       const height = document.getElementById('new-height').value.trim();
       const category = document.getElementById('new-category').value;
       const status = document.getElementById('new-status').value;
-      let image = document.getElementById('new-image').value.trim();
       const statusEl = document.getElementById('new-upload-status');
 
       if (!title || !info || isNaN(price)) { showError('Заполните название, описание и цену'); return; }
       statusEl.textContent = '⏳ Сохранение...';
 
       try {
-        // 1. Загрузка фото, если выбрано
-        if (newImageBase64) {
-          const path = `${CONFIG.uploadDir}/${newImageFileName}`;
-          const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${path}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-            body: JSON.stringify({ message: `admin: add image for ${title}`, content: newImageBase64, branch: CONFIG.branch })
-          });
-          if (!res.ok) throw new Error('Ошибка загрузки фото');
-          image = `./assets/uploads/${newImageFileName}`;
+        const media = [];
+        for (const item of newMediaQueue) {
+          const uploaded = await uploadFileToGitHub(item.file, token);
+          media.push(uploaded);
         }
 
-        // 2. Чтение текущего каталога
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
+        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
+        if (!res.ok) throw new Error(parseGitHubError(res, await res.json().catch(() => ({}))));
         const data = await res.json();
         const json = JSON.parse(decodeUTF8Base64(data.content));
 
-        // 3. Добавление товара
-        json.products.push({ title, info, price, height, image, category, status });
+        json.products.push({
+          title, info, price, height, category, status,
+          media,
+          image: getFirstImageSrc(media)
+        });
 
-        // 4. Коммит
-        const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
+        const updateRes = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
           method: 'PUT',
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
           body: JSON.stringify({ message: `admin: add product ${title}`, content: encodeUTF8Base64(JSON.stringify(json, null, 2)), sha: data.sha, branch: CONFIG.branch })
         });
 
         if (updateRes.ok) { showSuccess(); closeAddModal(); loadProducts(token); loadHomepage(token); }
-        else { const err = await updateRes.json(); showError(err.message || 'Ошибка сохранения'); }
+        else { const err = await updateRes.json(); showError(parseGitHubError(updateRes, err)); }
       } catch(e) { showError(e.message); } finally { statusEl.textContent = ''; }
     }
 
@@ -450,7 +550,7 @@
     async function loadHomepage(token) {
       if (!token) token = localStorage.getItem('gh_token');
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}?ref=${CONFIG.branch}`, {
+        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
         if (res.status === 404) {
@@ -472,18 +572,22 @@
       const featured = window.homepageData?.featured || [];
       const all = window.productsData?.products || [];
       if (!all.length) { list.innerHTML = '<p class="small">Сначала добавьте товары</p>'; return; }
-      list.innerHTML = all.map(p => {
+      list.innerHTML = all.map((p, idx) => {
         const isFeatured = featured.some(f => f.title === p.title);
+        const imgSrc = getFirstImageSrc(normalizeMedia(p)) || p.image;
         return `
           <div class="featured-item">
-            <img src="${toAbsoluteUrl(p.image)}" alt="">
+            <img src="${escapeHtml(toAbsoluteUrl(imgSrc))}" alt="">
             <div style="flex:1"><strong>${escapeHtml(p.title)}</strong><div class="small">${escapeHtml(p.info || '')}</div></div>
-            <button class="${isFeatured ? 'danger' : 'secondary'}" onclick="toggleFeatured('${escapeHtml(p.title)}', ${!isFeatured})">
+            <button type="button" class="${isFeatured ? 'danger' : 'secondary'}" data-action="toggle-featured" data-title="${escapeHtml(p.title)}" data-add="${!isFeatured}">
               ${isFeatured ? '✕ Убрать' : '+ Добавить'}
             </button>
           </div>
         `;
       }).join('');
+      list.querySelectorAll('[data-action="toggle-featured"]').forEach(btn => {
+        btn.addEventListener('click', () => toggleFeatured(btn.dataset.title, btn.dataset.add === 'true'));
+      });
     }
 
     function toggleFeatured(title, add) {
@@ -521,11 +625,11 @@
     async function saveHomepageData(data, message) {
       const token = localStorage.getItem('gh_token');
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}?ref=${CONFIG.branch}`, {
+        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}?ref=${CONFIG.branch}`, {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
         const sha = res.ok ? (await res.json()).sha : null;
-        const updateRes = await fetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}`, {
+        const updateRes = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}`, {
           method: 'PUT',
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
           body: JSON.stringify({ message, content: encodeUTF8Base64(JSON.stringify(data, null, 2)), sha, branch: CONFIG.branch })

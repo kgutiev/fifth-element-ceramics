@@ -21,6 +21,8 @@
 <title>Заказать — Fifth Element Ceramics</title>
 <meta name="description" content="Свяжитесь с нами для заказа керамики ручной работы или обсуждения индивидуального проекта. Fifth Element Ceramics, Сочи.">
 
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
 <link href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700&f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./base.css">
 <link rel="stylesheet" href="./style.css">
@@ -30,7 +32,7 @@
   <header class="site-header" id="site-header">
     <div class="header-inner">
       <a href="./index.html" class="logo" aria-label="Fifth Element Ceramics — Главная">
-        <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img">
+        <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img" width="40" height="40" decoding="async">
         <div class="logo-text">Fifth Element<span>Ceramics</span></div>
       </a>
       <nav class="nav-desktop">
@@ -161,7 +163,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="./index.html" class="logo" aria-label="Fifth Element Ceramics — Главная">
-            <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img">
+            <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img" width="40" height="40" decoding="async">
             <div class="logo-text">Fifth Element<span>Ceramics</span></div>
           </a>
           <p>Керамические объекты и мастер-классы. Сочи / Москва.</p>
@@ -191,6 +193,7 @@
       if(t) t.addEventListener('click', () => {
         d = d === 'dark' ? 'light' : 'dark';
         r.setAttribute('data-theme', d);
+        t.setAttribute('aria-label', 'Переключить на ' + (d === 'dark' ? 'светлую' : 'тёмную') + ' тему');
         t.innerHTML = d === 'dark'
           ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
           : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
@@ -198,7 +201,7 @@
     })();
     window.addEventListener('scroll', () => {
       document.getElementById('site-header').classList.toggle('site-header--scrolled', window.scrollY > 10);
-    });
+    }, { passive: true });
   </script>
 </body>
 </html>

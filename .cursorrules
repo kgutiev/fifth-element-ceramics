@@ -1,0 +1,67 @@
+# Fifth Element Ceramics — Cursor Rules
+
+## Stack (strict)
+- Vanilla HTML5, CSS3, ES6+ JavaScript only
+- NO React, Vue, Webpack, Vite, npm, Node.js build tools
+- Hosting: GitHub Pages (custom domain via CNAME)
+- CMS: `/cms/simple-admin.html` — GitHub REST API + PAT in localStorage
+- Data: `data/products.json`, `data/homepage.json`
+- Media: `assets/uploads/` (images + short video loops)
+
+## File conventions
+- Public pages: `index.html`, `catalog.html`, `about.html`, `contact.html`
+- Styles: `base.css` (reset + a11y), `style.css` (design tokens + components)
+- Inline `<script>` at end of `<body>` — no external JS bundles
+- Scripts must NOT block rendering; no `<script src>` in `<head>` without `defer`
+
+## Data model (products)
+```json
+{
+  "title": "string",
+  "info": "string",
+  "price": number,
+  "height": "string",
+  "category": "vases|pots|decor",
+  "status": "В наличии|Продано|Под заказ",
+  "image": "./assets/...",
+  "media": [{ "type": "image|video", "src": "./assets/..." }]
+}
+```
+- `image` is kept for backward compatibility (first image in `media`)
+- `normalizeMedia()`: if `media` missing, migrate from `image`
+
+## Security (mandatory)
+- NEVER hardcode PAT tokens (`ghp_*`) — only OAuth client_id (public)
+- Escape ALL JSON-derived strings before DOM insertion (`escapeHtml`, `escapeAttr`)
+- Validate media URLs: only `./assets/...` relative paths on public site
+- Use `textContent` for error messages, not raw `innerHTML`
+- Use `data-*` attributes + event listeners, NOT inline `onclick` with user data
+- GitHub API: use `githubFetch()` with retry on 403 rate-limit and 5xx
+
+## Performance
+- Images: `loading="lazy"`, `decoding="async"`, explicit `width`/`height`
+- Videos: `muted playsinline preload="metadata"`, autoplay only for hero/loops
+- Fontshare: `rel="preconnect"` to api.fontshare.com and cdn.fontshare.com
+- Scroll listeners: `{ passive: true }`
+
+## Accessibility
+- Tap targets ≥ 44×44px for buttons and gallery dots
+- Gallery: `role="tablist"`, `aria-selected`, keyboard ArrowLeft/ArrowRight
+- Theme toggle: update `aria-label` on switch
+- `:focus-visible` styles in base.css — do not remove
+
+## CSS
+- Use existing CSS variables from `:root` / `[data-theme]`
+- Prefer `clamp()`, logical properties (`margin-inline`, `inset-block`), `oklch()`
+- Do not add unused CSS; remove dead rules when refactoring
+
+## CMS admin
+- Image max: 5 MB; video max: 15 MB
+- Allowed MIME: jpeg, png, webp, gif, mp4, webm
+- UTF-8 base64: `encodeUTF8Base64` / `decodeUTF8Base64` (TextEncoder/TextDecoder)
+- On save: write both `media[]` and `image` (first image src)
+
+## Git / deploy
+- `_headers` for Cloudflare Pages / Netlify (not native GitHub Pages)
+- Do not commit `.env`, PAT files, or secrets
+- Preserve 100% functionality when patching — minimal focused diffs

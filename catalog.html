@@ -21,6 +21,8 @@
 <title>Каталог — Fifth Element Ceramics</title>
 <meta name="description" content="Каталог интерьерной керамики ручной работы: вазы, кашпо и декор. Fifth Element Ceramics, Сочи.">
 
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
 <link href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700&f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./base.css">
 <link rel="stylesheet" href="./style.css">
@@ -30,7 +32,7 @@
   <header class="site-header" id="site-header">
     <div class="header-inner">
       <a href="./index.html" class="logo" aria-label="Fifth Element Ceramics — Главная">
-        <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img">
+        <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img" width="40" height="40" decoding="async">
         <div class="logo-text">Fifth Element<span>Ceramics</span></div>
       </a>
       <nav class="nav-desktop">
@@ -71,11 +73,11 @@
 
     <section class="section">
       <div class="container">
-        <div class="filter-tabs" id="filter-tabs">
-          <button class="filter-tab active" data-filter="all">Все</button>
-          <button class="filter-tab" data-filter="vases">Вазы</button>
-          <button class="filter-tab" data-filter="pots">Посуда</button>
-          <button class="filter-tab" data-filter="decor">Декор</button>
+        <div class="filter-tabs" id="filter-tabs" role="tablist" aria-label="Фильтр категорий">
+          <button class="filter-tab active" role="tab" aria-selected="true" data-filter="all">Все</button>
+          <button class="filter-tab" role="tab" aria-selected="false" data-filter="vases">Вазы</button>
+          <button class="filter-tab" role="tab" aria-selected="false" data-filter="pots">Посуда</button>
+          <button class="filter-tab" role="tab" aria-selected="false" data-filter="decor">Декор</button>
         </div>
 
         <!-- 👇🏼 ДИНАМИЧЕСКИЙ БЛОК: товары подгружаются из JSON -->
@@ -102,7 +104,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="./index.html" class="logo" aria-label="Fifth Element Ceramics — Главная">
-            <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img">
+            <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img" width="40" height="40" decoding="async">
             <div class="logo-text">Fifth Element<span>Ceramics</span></div>
           </a>
           <p>Керамические объекты и мастер-классы. Сочи / Москва.</p>
@@ -137,9 +139,10 @@
       if(t) t.addEventListener('click', () => {
         d = d === 'dark' ? 'light' : 'dark';
         r.setAttribute('data-theme', d);
+        t.setAttribute('aria-label', 'Переключить на ' + (d === 'dark' ? 'светлую' : 'тёмную') + ' тему');
         t.innerHTML = d === 'dark'
-          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
-          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
       });
     })();
 
@@ -147,9 +150,146 @@
     window.addEventListener('scroll', () => {
       const header = document.getElementById('site-header');
       if(header) header.classList.toggle('site-header--scrolled', window.scrollY > 10);
-    });
+    }, { passive: true });
 
-    // 3. Загрузка каталога + фильтры
+    // 3. Утилиты: XSS-защита и нормализация медиа
+    function escapeHtml(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+    function escapeAttr(str) { return escapeHtml(str).replace(/"/g, '&quot;'); }
+    function isSafeMediaUrl(url) {
+      if (!url || typeof url !== 'string') return false;
+      return /^\.\/assets\/[^\s"'<>\\]+$/.test(url);
+    }
+    function normalizeMedia(product) {
+      if (Array.isArray(product.media) && product.media.length) {
+        return product.media.filter(m => m && m.src && isSafeMediaUrl(m.src));
+      }
+      if (product.image && isSafeMediaUrl(product.image)) {
+        return [{ type: 'image', src: product.image }];
+      }
+      return [];
+    }
+    function renderSingleMedia(item, title) {
+      const src = escapeAttr(item.src);
+      const alt = escapeAttr(title);
+      if (item.type === 'video') {
+        return `<video muted playsinline loop preload="metadata" autoplay width="570" height="760"><source src="${src}" type="video/mp4"></video>`;
+      }
+      return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async" width="570" height="760">`;
+    }
+    function renderProductCard(p, index) {
+      const media = normalizeMedia(p);
+      const cat = escapeAttr(p.category || 'all');
+      const title = escapeHtml(p.title);
+      const info = escapeHtml(p.info);
+      const price = Number(p.price).toLocaleString('ru-RU');
+      const status = p.status ? `<span class="product-card-tag">${escapeHtml(p.status)}</span>` : '';
+
+      let imageBlock;
+      if (media.length > 1) {
+        const slides = media.map((m, i) => {
+          const src = escapeAttr(m.src);
+          const alt = escapeAttr(p.title);
+          const cls = 'product-gallery__media' + (i === 0 ? ' is-active' : '');
+          if (m.type === 'video') {
+            return `<video class="${cls}" muted playsinline loop preload="metadata" ${i === 0 ? 'autoplay' : ''} width="570" height="760"><source src="${src}" type="video/mp4"></video>`;
+          }
+          return `<img class="${cls}" src="${src}" alt="${alt}" loading="lazy" decoding="async" width="570" height="760">`;
+        }).join('');
+        const dots = media.map((_, i) =>
+          `<button type="button" class="product-gallery__dot${i === 0 ? ' is-active' : ''}" role="tab" aria-selected="${i === 0}" aria-label="Слайд ${i + 1} из ${media.length}" data-index="${i}"></button>`
+        ).join('');
+        imageBlock = `
+          <div class="product-card-image">
+            <div class="product-gallery" data-gallery tabindex="0" aria-roledescription="carousel" aria-label="Галерея: ${escapeAttr(p.title)}">
+              <div class="product-gallery__viewport">${slides}</div>
+              <div class="product-gallery__dots" role="tablist">${dots}</div>
+            </div>
+          </div>`;
+      } else if (media.length === 1) {
+        imageBlock = `<div class="product-card-image">${renderSingleMedia(media[0], p.title)}</div>`;
+      } else {
+        imageBlock = `<div class="product-card-image product-card-image--empty" aria-hidden="true"></div>`;
+      }
+
+      return `
+        <div class="product-card fade-in" data-category="${cat}">
+          ${imageBlock}
+          <div class="product-card-body">
+            <h3 class="product-card-title">${title}</h3>
+            <p class="product-card-info">${info}</p>
+            <p class="product-card-price">${price} ₽</p>
+            ${status}
+          </div>
+        </div>`;
+    }
+
+    function initGalleries() {
+      document.querySelectorAll('[data-gallery]').forEach(gallery => {
+        const items = gallery.querySelectorAll('.product-gallery__media');
+        const dots = gallery.querySelectorAll('.product-gallery__dot');
+        if (!items.length) return;
+
+        function showSlide(index) {
+          items.forEach((el, i) => {
+            const active = i === index;
+            el.classList.toggle('is-active', active);
+            if (el.tagName === 'VIDEO') {
+              if (active) el.play().catch(() => {});
+              else { el.pause(); el.currentTime = 0; }
+            }
+          });
+          dots.forEach((dot, i) => {
+            dot.classList.toggle('is-active', i === index);
+            dot.setAttribute('aria-selected', String(i === index));
+          });
+        }
+
+        dots.forEach(dot => {
+          dot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showSlide(Number(dot.dataset.index));
+          });
+        });
+
+        gallery.querySelector('.product-gallery__viewport')?.addEventListener('click', () => {
+          const current = [...items].findIndex(el => el.classList.contains('is-active'));
+          showSlide((current + 1) % items.length);
+        });
+
+        gallery.addEventListener('keydown', (e) => {
+          const current = [...items].findIndex(el => el.classList.contains('is-active'));
+          if (e.key === 'ArrowRight') { e.preventDefault(); showSlide((current + 1) % items.length); }
+          if (e.key === 'ArrowLeft') { e.preventDefault(); showSlide((current - 1 + items.length) % items.length); }
+        });
+      });
+    }
+
+    function initFilters() {
+      const tabs = document.getElementById('filter-tabs');
+      if (!tabs || tabs.dataset.bound) return;
+      tabs.dataset.bound = 'true';
+      tabs.addEventListener('click', (e) => {
+        const tab = e.target.closest('.filter-tab');
+        if (!tab) return;
+        const filter = tab.dataset.filter;
+        document.querySelectorAll('.filter-tab').forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        document.querySelectorAll('.product-card').forEach(card => {
+          card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+        });
+      });
+    }
+
+    // 4. Загрузка каталога
     document.addEventListener('DOMContentLoaded', () => {
       const jsonUrl = new URL('./data/products.json', window.location.href).toString();
       const grid = document.getElementById('product-grid');
@@ -160,42 +300,19 @@
           return res.json();
         })
         .then(data => {
-          if (!grid || !data.products?.length) return;
-          grid.innerHTML = data.products.map(p => `
-            <div class="product-card fade-in" data-category="${p.category || 'all'}">
-              <div class="product-card-image">
-                <img src="${p.image}" alt="${p.title}" loading="lazy" width="570" height="760">
-              </div>
-              <div class="product-card-body">
-                <h3 class="product-card-title">${p.title}</h3>
-                <p class="product-card-info">${p.info}</p>
-                <p class="product-card-price">${Number(p.price).toLocaleString('ru-RU')} ₽</p>
-                ${p.status ? `<span class="product-card-tag">${p.status}</span>` : ''}
-              </div>
-            </div>
-          `).join('');
+          if (!grid) return;
+          if (!data.products?.length) {
+            grid.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:2rem;">Каталог пуст.</p>';
+            return;
+          }
+          grid.innerHTML = data.products.map(renderProductCard).join('');
+          initGalleries();
           initFilters();
         })
         .catch(err => {
-          console.error('⚠️ Ошибка загрузки:', err);
-          if(grid) grid.innerHTML = `<p style="text-align:center;color:#e74c3c;padding:2rem;">Каталог временно недоступен. Обновите страницу.</p>`;
+          console.error('Ошибка загрузки каталога:', err);
+          if (grid) grid.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:2rem;">Каталог временно недоступен. Обновите страницу.</p>';
         });
-
-      function initFilters() {
-        const tabs = document.getElementById('filter-tabs');
-        if (!tabs) return;
-        tabs.addEventListener('click', (e) => {
-          const tab = e.target.closest('.filter-tab');
-          if (!tab) return;
-          const filter = tab.dataset.filter;
-          document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          document.querySelectorAll('.product-card').forEach(card => {
-            card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
-          });
-        });
-      }
-      initFilters();
     });
   </script>
 </body>
