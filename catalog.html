@@ -46,7 +46,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
         <button class="menu-toggle" aria-label="Открыть меню" onclick="document.querySelector('.nav-mobile').classList.add('open')">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
       </div>
     </div>
@@ -129,6 +129,41 @@
     </div>
   </footer>
 
+  <!-- Product lightbox -->
+  <div id="product-modal" class="product-modal" hidden aria-hidden="true">
+    <div class="product-modal__backdrop" data-modal-close tabindex="-1"></div>
+    <div class="product-modal__panel" role="dialog" aria-modal="true" aria-labelledby="product-modal-title">
+      <button type="button" class="product-modal__close" data-modal-close aria-label="Закрыть">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="product-modal__layout">
+        <div class="product-modal__gallery-wrap">
+          <div class="product-modal__gallery" data-modal-gallery tabindex="0" aria-roledescription="carousel">
+            <div class="product-modal__viewport" data-modal-viewport></div>
+            <div class="product-modal__dots" role="tablist" data-modal-dots></div>
+            <button type="button" class="product-modal__nav product-modal__nav--prev" data-modal-prev aria-label="Предыдущий слайд">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="product-modal__nav product-modal__nav--next" data-modal-next aria-label="Следующий слайд">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="product-modal__info">
+          <p class="product-modal__category section-tag" data-modal-category></p>
+          <h2 id="product-modal-title" class="product-modal__title" data-modal-title></h2>
+          <p class="product-modal__description" data-modal-description></p>
+          <p class="product-modal__price" data-modal-price></p>
+          <span class="product-card-tag product-modal__status" data-modal-status hidden></span>
+          <div class="product-modal__actions">
+            <a href="./contact.html" class="btn btn--primary">Заказать</a>
+            <button type="button" class="btn btn--outline" data-modal-close>Закрыть</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // 1. Переключение темы
     (function(){
@@ -181,6 +216,22 @@
       }
       return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async" width="570" height="760">`;
     }
+    const CATEGORY_LABELS = { vases: 'Вазы', pots: 'Посуда', decor: 'Декор', all: 'Все' };
+    let catalogProducts = [];
+    let modalReturnFocus = null;
+    let modalSlideIndex = 0;
+    let currentModalIndex = -1;
+
+    function renderMediaSlide(m, title, i, active, prefix) {
+      const src = escapeAttr(m.src);
+      const alt = escapeAttr(title);
+      const cls = prefix + '__media' + (active ? ' is-active' : '');
+      if (m.type === 'video') {
+        return `<video class="${cls}" muted playsinline loop preload="metadata" ${active ? 'autoplay' : ''} width="800" height="800"><source src="${src}" type="video/mp4"></video>`;
+      }
+      return `<img class="${cls}" src="${src}" alt="${alt}" loading="lazy" decoding="async" width="800" height="800">`;
+    }
+
     function renderProductCard(p, index) {
       const media = normalizeMedia(p);
       const cat = escapeAttr(p.category || 'all');
@@ -191,21 +242,13 @@
 
       let imageBlock;
       if (media.length > 1) {
-        const slides = media.map((m, i) => {
-          const src = escapeAttr(m.src);
-          const alt = escapeAttr(p.title);
-          const cls = 'product-gallery__media' + (i === 0 ? ' is-active' : '');
-          if (m.type === 'video') {
-            return `<video class="${cls}" muted playsinline loop preload="metadata" ${i === 0 ? 'autoplay' : ''} width="570" height="760"><source src="${src}" type="video/mp4"></video>`;
-          }
-          return `<img class="${cls}" src="${src}" alt="${alt}" loading="lazy" decoding="async" width="570" height="760">`;
-        }).join('');
+        const slides = media.map((m, i) => renderMediaSlide(m, p.title, i, i === 0, 'product-gallery')).join('');
         const dots = media.map((_, i) =>
           `<button type="button" class="product-gallery__dot${i === 0 ? ' is-active' : ''}" role="tab" aria-selected="${i === 0}" aria-label="Слайд ${i + 1} из ${media.length}" data-index="${i}"></button>`
         ).join('');
         imageBlock = `
           <div class="product-card-image">
-            <div class="product-gallery" data-gallery tabindex="0" aria-roledescription="carousel" aria-label="Галерея: ${escapeAttr(p.title)}">
+            <div class="product-gallery" data-gallery tabindex="-1" aria-roledescription="carousel" aria-label="Галерея: ${escapeAttr(p.title)}">
               <div class="product-gallery__viewport">${slides}</div>
               <div class="product-gallery__dots" role="tablist">${dots}</div>
             </div>
@@ -217,15 +260,19 @@
       }
 
       return `
-        <div class="product-card fade-in" data-category="${cat}">
+        <article class="product-card fade-in" data-category="${cat}" data-product-index="${index}" tabindex="0" role="button" aria-label="Открыть: ${escapeAttr(p.title)}">
           ${imageBlock}
           <div class="product-card-body">
             <h3 class="product-card-title">${title}</h3>
-            <p class="product-card-info">${info}</p>
+            <p class="product-card-info product-card-info--clamped">${info}</p>
             <p class="product-card-price">${price} ₽</p>
             ${status}
+            <p class="product-card-hint">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Нажмите для просмотра
+            </p>
           </div>
-        </div>`;
+        </article>`;
     }
 
     function initGalleries() {
@@ -256,11 +303,6 @@
           });
         });
 
-        gallery.querySelector('.product-gallery__viewport')?.addEventListener('click', () => {
-          const current = [...items].findIndex(el => el.classList.contains('is-active'));
-          showSlide((current + 1) % items.length);
-        });
-
         gallery.addEventListener('keydown', (e) => {
           const current = [...items].findIndex(el => el.classList.contains('is-active'));
           if (e.key === 'ArrowRight') { e.preventDefault(); showSlide((current + 1) % items.length); }
@@ -289,7 +331,168 @@
       });
     }
 
-    // 4. Загрузка каталога
+    // 5. Lightbox modal
+    const modalEl = document.getElementById('product-modal');
+    const modalPanel = modalEl?.querySelector('.product-modal__panel');
+    const modalViewport = modalEl?.querySelector('[data-modal-viewport]');
+    const modalDots = modalEl?.querySelector('[data-modal-dots]');
+    const modalGallery = modalEl?.querySelector('[data-modal-gallery]');
+
+    function setModalSlide(index, media) {
+      if (!modalViewport) return;
+      modalSlideIndex = index;
+      const items = modalViewport.querySelectorAll('.product-modal__media');
+      const dots = modalDots?.querySelectorAll('.product-modal__dot') || [];
+      items.forEach((el, i) => {
+        const active = i === index;
+        el.classList.toggle('is-active', active);
+        if (el.tagName === 'VIDEO') {
+          if (active) el.play().catch(() => {});
+          else { el.pause(); el.currentTime = 0; }
+        }
+      });
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('is-active', i === index);
+        dot.setAttribute('aria-selected', String(i === index));
+      });
+      const prevBtn = modalEl.querySelector('[data-modal-prev]');
+      const nextBtn = modalEl.querySelector('[data-modal-next]');
+      if (prevBtn) prevBtn.style.visibility = media.length > 1 ? 'visible' : 'hidden';
+      if (nextBtn) nextBtn.style.visibility = media.length > 1 ? 'visible' : 'hidden';
+      if (modalDots) modalDots.style.display = media.length > 1 ? 'flex' : 'none';
+    }
+
+    function buildModalGallery(media, title) {
+      if (!modalViewport || !modalDots) return;
+      modalViewport.innerHTML = media.map((m, i) => renderMediaSlide(m, title, i, i === 0, 'product-modal')).join('');
+      modalDots.innerHTML = media.map((_, i) =>
+        `<button type="button" class="product-modal__dot product-gallery__dot${i === 0 ? ' is-active' : ''}" role="tab" aria-selected="${i === 0}" aria-label="Слайд ${i + 1} из ${media.length}" data-index="${i}"></button>`
+      ).join('');
+      modalDots.querySelectorAll('.product-modal__dot').forEach(dot => {
+        dot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setModalSlide(Number(dot.dataset.index), media);
+        });
+      });
+      setModalSlide(0, media);
+    }
+
+    function trapModalFocus(e) {
+      if (e.key !== 'Tab' || !modalPanel) return;
+      const focusable = modalPanel.querySelectorAll('button, [href], input, [tabindex]:not([tabindex="-1"])');
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+
+    function openProductModal(index) {
+      const product = catalogProducts[index];
+      if (!product || !modalEl) return;
+      currentModalIndex = index;
+      const media = normalizeMedia(product);
+      modalReturnFocus = document.activeElement;
+
+      modalEl.querySelector('[data-modal-title]').textContent = product.title;
+      modalEl.querySelector('[data-modal-description]').textContent = product.info || '';
+      modalEl.querySelector('[data-modal-price]').textContent = Number(product.price).toLocaleString('ru-RU') + ' ₽';
+      modalEl.querySelector('[data-modal-category]').textContent = CATEGORY_LABELS[product.category] || product.category || '';
+
+      const statusEl = modalEl.querySelector('[data-modal-status]');
+      if (product.status) {
+        statusEl.textContent = product.status;
+        statusEl.hidden = false;
+      } else {
+        statusEl.hidden = true;
+      }
+
+      if (media.length) buildModalGallery(media, product.title);
+      else if (modalViewport) modalViewport.innerHTML = '<div class="product-modal__empty">Нет изображения</div>';
+
+      modalEl.hidden = false;
+      modalEl.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      requestAnimationFrame(() => modalEl.classList.add('is-open'));
+      modalEl.querySelector('.product-modal__close')?.focus();
+      document.addEventListener('keydown', onModalKeydown);
+    }
+
+    function closeProductModal() {
+      if (!modalEl || modalEl.hidden) return;
+      currentModalIndex = -1;
+      modalEl.classList.remove('is-open');
+      modalEl.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      document.removeEventListener('keydown', onModalKeydown);
+      modalViewport?.querySelectorAll('video').forEach(v => { v.pause(); });
+      setTimeout(() => { modalEl.hidden = true; }, 250);
+      if (modalReturnFocus?.focus) modalReturnFocus.focus();
+    }
+
+    function onModalKeydown(e) {
+      const currentMedia = currentModalIndex >= 0 ? normalizeMedia(catalogProducts[currentModalIndex]) : [];
+
+      if (e.key === 'Escape') { e.preventDefault(); closeProductModal(); return; }
+      if (e.key === 'ArrowRight' && currentMedia.length > 1) {
+        e.preventDefault();
+        setModalSlide((modalSlideIndex + 1) % currentMedia.length, currentMedia);
+      }
+      if (e.key === 'ArrowLeft' && currentMedia.length > 1) {
+        e.preventDefault();
+        setModalSlide((modalSlideIndex - 1 + currentMedia.length) % currentMedia.length, currentMedia);
+      }
+      trapModalFocus(e);
+    }
+
+    function initModalSwipe() {
+      if (!modalViewport) return;
+      let touchStartX = 0;
+      modalViewport.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      modalViewport.addEventListener('touchend', (e) => {
+        const m = currentModalIndex >= 0 ? normalizeMedia(catalogProducts[currentModalIndex]) : [];
+        if (m.length < 2) return;
+        const diff = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(diff) < 50) return;
+        if (diff < 0) setModalSlide((modalSlideIndex + 1) % m.length, m);
+        else setModalSlide((modalSlideIndex - 1 + m.length) % m.length, m);
+      }, { passive: true });
+    }
+
+    function initProductCards() {
+      document.querySelectorAll('.product-card[data-product-index]').forEach(card => {
+        const open = () => openProductModal(Number(card.dataset.productIndex));
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.product-gallery__dot')) return;
+          open();
+        });
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
+      });
+    }
+
+    modalEl?.querySelectorAll('[data-modal-close]').forEach(el => {
+      el.addEventListener('click', closeProductModal);
+    });
+    modalEl?.querySelector('[data-modal-prev]')?.addEventListener('click', () => {
+      const m = currentModalIndex >= 0 ? normalizeMedia(catalogProducts[currentModalIndex]) : [];
+      if (m.length) setModalSlide((modalSlideIndex - 1 + m.length) % m.length, m);
+    });
+    modalEl?.querySelector('[data-modal-next]')?.addEventListener('click', () => {
+      const m = currentModalIndex >= 0 ? normalizeMedia(catalogProducts[currentModalIndex]) : [];
+      if (m.length) setModalSlide((modalSlideIndex + 1) % m.length, m);
+    });
+    modalEl?.querySelector('.product-modal__backdrop')?.addEventListener('click', closeProductModal);
+    modalViewport?.addEventListener('click', () => {
+      const m = currentModalIndex >= 0 ? normalizeMedia(catalogProducts[currentModalIndex]) : [];
+      if (m.length > 1) setModalSlide((modalSlideIndex + 1) % m.length, m);
+    });
+    initModalSwipe();
+
+    // 6. Загрузка каталога
     document.addEventListener('DOMContentLoaded', () => {
       const jsonUrl = new URL('./data/products.json', window.location.href).toString();
       const grid = document.getElementById('product-grid');
@@ -305,9 +508,11 @@
             grid.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:2rem;">Каталог пуст.</p>';
             return;
           }
+          catalogProducts = data.products;
           grid.innerHTML = data.products.map(renderProductCard).join('');
           initGalleries();
           initFilters();
+          initProductCards();
         })
         .catch(err => {
           console.error('Ошибка загрузки каталога:', err);

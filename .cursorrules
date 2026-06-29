@@ -57,7 +57,7 @@
 
 ## CMS admin
 - Image max: 5 MB; video max: 15 MB
-- Allowed MIME: jpeg, png, webp, gif, mp4, webm
+- Allowed MIME: jpeg, png, webp, gif, mp4, webm, mov (quicktime → saved as .mp4 path)
 - UTF-8 base64: `encodeUTF8Base64` / `decodeUTF8Base64` (TextEncoder/TextDecoder)
 - On save: write both `media[]` and `image` (first image src)
 
