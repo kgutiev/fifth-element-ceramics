@@ -199,8 +199,123 @@
     function parseGitHubError(res, body) {
       if (res.status === 404) return 'Файл не найден (404)';
       if (res.status === 403) return 'Доступ запрещён — проверьте токен и права repo (403)';
-      if (res.status === 422) return body?.message || 'Конфликт версий — обновите страницу (422)';
+      if (res.status === 409) return 'Конфликт версий: файл изменился. Повторяем сохранение… (409)';
+      if (res.status === 422) return body?.message || 'Некорректные данные (422)';
       return body?.message || `HTTP ${res.status}`;
+    }
+
+    // --- Блокировка параллельных сохранений ---
+    let saveQueue = Promise.resolve();
+
+    function withSaveLock(fn) {
+      const run = saveQueue.then(() => fn());
+      saveQueue = run.catch(() => {});
+      return run;
+    }
+
+    function getToken() {
+      return localStorage.getItem('gh_token');
+    }
+
+    function authHeaders(token) {
+      return { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' };
+    }
+
+    async function fetchJsonFile(path, token) {
+      const res = await githubFetch(
+        `https://api.github.com/repos/${CONFIG.repo}/contents/${path}?ref=${CONFIG.branch}`,
+        { headers: authHeaders(token) }
+      );
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(parseGitHubError(res, body));
+      const json = JSON.parse(decodeUTF8Base64(body.content));
+      console.log('[admin] GET', path, { sha: body.sha, keys: Object.keys(json) });
+      return { json, sha: body.sha };
+    }
+
+    async function putJsonFile(path, token, json, sha, message) {
+      const payload = {
+        message,
+        content: encodeUTF8Base64(JSON.stringify(json, null, 2)),
+        branch: CONFIG.branch
+      };
+      if (sha) payload.sha = sha;
+      console.log('[admin] PUT', path, { sha, message, preview: json });
+      const res = await githubFetch(
+        `https://api.github.com/repos/${CONFIG.repo}/contents/${path}`,
+        { method: 'PUT', headers: authHeaders(token), body: JSON.stringify(payload) }
+      );
+      const body = await res.json().catch(() => ({}));
+      console.log('[admin] PUT response', path, res.status, body);
+      return { ok: res.ok, status: res.status, body, sha: body.content?.sha };
+    }
+
+    async function putJsonFileWithRetry(path, token, buildJson, message, maxAttempts = 4) {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const { json, sha } = await fetchJsonFile(path, token);
+        const nextJson = buildJson(json);
+        const result = await putJsonFile(path, token, nextJson, sha, message);
+        if (result.ok) return result;
+        if (result.status === 409 && attempt < maxAttempts) {
+          console.warn('[admin] SHA conflict, retry', attempt, path);
+          await new Promise(r => setTimeout(r, 400 * attempt));
+          continue;
+        }
+        throw new Error(parseGitHubError({ status: result.status }, result.body));
+      }
+      throw new Error('Не удалось сохранить после нескольких попыток');
+    }
+
+    function findProductIndex(products, product) {
+      if (!Array.isArray(products) || !product) return -1;
+      if (product.id) {
+        const byId = products.findIndex(p => p.id === product.id);
+        if (byId >= 0) return byId;
+      }
+      return products.findIndex(p => p.title === product.title);
+    }
+
+    function cloneProduct(product) {
+      const media = normalizeMedia(product).map(m => ({ ...m }));
+      return {
+        ...product,
+        media,
+        image: getFirstImageSrc(media) || product.image || ''
+      };
+    }
+
+    function snapshotForFeatured(product) {
+      const cloned = cloneProduct(product);
+      return {
+        id: cloned.id,
+        title: cloned.title,
+        info: cloned.info,
+        price: cloned.price,
+        height: cloned.height,
+        image: cloned.image,
+        category: cloned.category,
+        status: cloned.status,
+        media: cloned.media
+      };
+    }
+
+    function validateProductInput({ title, info, price }) {
+      if (!title || title.length < 2) return 'Укажите название (минимум 2 символа)';
+      if (!info) return 'Укажите описание';
+      if (typeof price !== 'number' || isNaN(price) || price < 0) return 'Укажите корректную цену';
+      return null;
+    }
+
+    async function createJsonFile(path, token, json, message) {
+      const result = await putJsonFile(path, token, json, null, message);
+      if (!result.ok) throw new Error(parseGitHubError({ status: result.status }, result.body));
+      return result;
+    }
+
+    function setSavingState(active) {
+      document.querySelectorAll('[data-action="save"], [data-action="delete"], #add-form button[type="submit"], button[onclick="saveFeatured()"], button[onclick="saveContacts()"]').forEach(btn => {
+        btn.disabled = active;
+      });
     }
 
     function normalizeMedia(product) {
@@ -306,7 +421,8 @@
         const content = JSON.parse(decodeUTF8Base64(data.content));
         window.productsSha = data.sha;
         window.productsData = content;
-        renderProducts(content.products || []);
+        if (!Array.isArray(content.products)) content.products = [];
+        renderProducts([...content.products]);
       } catch(e) { document.getElementById('products-list').innerHTML = `<p class="error">❌ ${escapeHtml(e.message)}</p>`; }
     }
 
@@ -375,12 +491,15 @@
     }
 
     function removeMediaItem(productIndex, mediaIndex) {
-      const product = window.productsData.products[productIndex];
-      const media = normalizeMedia(product);
+      const products = window.productsData?.products;
+      if (!products || productIndex < 0 || productIndex >= products.length) return;
+      const product = products[productIndex];
+      const media = [...normalizeMedia(product)];
+      if (mediaIndex < 0 || mediaIndex >= media.length) return;
       media.splice(mediaIndex, 1);
       product.media = media;
       product.image = getFirstImageSrc(media);
-      renderProducts(window.productsData.products);
+      renderProducts([...products]);
     }
 
     // 📤 Загрузка медиа (редактирование)
@@ -411,22 +530,29 @@
     async function handleMediaSelect(index, input) {
       const files = [...input.files];
       if (!files.length) return;
+      const products = window.productsData?.products;
+      if (!products || index < 0 || index >= products.length) {
+        showError('Товар не найден. Обновите страницу.');
+        return;
+      }
       const statusEl = document.getElementById(`upload-status-${index}`);
       statusEl.textContent = '⏳ Загрузка...';
       input.disabled = true;
-      const token = localStorage.getItem('gh_token');
-      const product = window.productsData.products[index];
-      if (!product.media) product.media = normalizeMedia(product);
+      const token = getToken();
+      const product = products[index];
+      const media = [...normalizeMedia(product)];
       try {
         for (const file of files) {
           const item = await uploadFileToGitHub(file, token);
-          product.media.push(item);
+          media.push(item);
         }
-        product.image = getFirstImageSrc(product.media);
-        statusEl.textContent = '✅ Загружено: ' + files.length;
+        product.media = media;
+        product.image = getFirstImageSrc(media);
+        statusEl.textContent = '✅ Загружено: ' + files.length + ' (нажмите «Сохранить»)';
         statusEl.style.color = 'var(--primary)';
-        renderProducts(window.productsData.products);
+        renderProducts([...products]);
       } catch(err) {
+        console.error('[admin] upload error', err);
         statusEl.textContent = '❌ ' + err.message;
       } finally {
         input.disabled = false;
@@ -435,53 +561,105 @@
     }
 
     async function saveProduct(index) {
-      const token = localStorage.getItem('gh_token');
-      const price = document.getElementById(`price-${index}`).value;
-      const status = document.getElementById(`status-${index}`).value;
-      const product = window.productsData?.products?.[index];
-      const media = normalizeMedia(product);
-      const title = product?.title || 'товар';
+      const products = window.productsData?.products;
+      if (!products || index < 0 || index >= products.length) {
+        showError('Товар не найден. Обновите страницу.');
+        return;
+      }
+      const uiProduct = products[index];
+      const priceEl = document.getElementById(`price-${index}`);
+      const statusEl = document.getElementById(`status-${index}`);
+      if (!priceEl || !statusEl) {
+        showError('Форма устарела. Нажмите «Обновить».');
+        return;
+      }
+      const price = Number(priceEl.value);
+      const status = statusEl.value;
+      const media = [...normalizeMedia(uiProduct)];
+      const validationError = validateProductInput({ title: uiProduct.title, info: uiProduct.info, price });
+      if (validationError) { showError(validationError); return; }
+
+      const token = getToken();
+      setSavingState(true);
       try {
-        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        await withSaveLock(async () => {
+          await putJsonFileWithRetry(
+            CONFIG.productsPath,
+            token,
+            (json) => {
+              json.products = json.products || [];
+              const idx = findProductIndex(json.products, uiProduct);
+              if (idx < 0) throw new Error('Товар «' + uiProduct.title + '» не найден на сервере. Обновите страницу.');
+              json.products[idx] = {
+                ...json.products[idx],
+                media,
+                image: getFirstImageSrc(media),
+                price,
+                status
+              };
+              return json;
+            },
+            `admin: update ${uiProduct.title}`
+          );
         });
-        if (!res.ok) throw new Error(parseGitHubError(res, await res.json().catch(() => ({}))));
-        const data = await res.json();
-        const json = JSON.parse(decodeUTF8Base64(data.content));
-        json.products[index].media = media;
-        json.products[index].image = getFirstImageSrc(media);
-        json.products[index].price = Number(price);
-        json.products[index].status = status;
-        const updateRes = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
-          method: 'PUT',
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-          body: JSON.stringify({ message: `admin: update ${title}`, content: encodeUTF8Base64(JSON.stringify(json, null, 2)), sha: data.sha, branch: CONFIG.branch })
-        });
-        if (updateRes.ok) { showSuccess(); loadProducts(token); }
-        else { const err = await updateRes.json(); showError(parseGitHubError(updateRes, err)); }
-      } catch(e) { showError(e.message); }
+        showSuccess();
+        await loadProducts(token);
+      } catch(e) {
+        console.error('[admin] saveProduct error', e);
+        showError(e.message);
+      } finally {
+        setSavingState(false);
+      }
     }
 
     async function deleteProduct(index) {
-      const title = window.productsData?.products?.[index]?.title || 'товар';
-      if (!confirm(`Удалить «${title}»?`)) return;
-      const token = localStorage.getItem('gh_token');
+      const products = window.productsData?.products;
+      if (!products || index < 0 || index >= products.length) {
+        showError('Товар не найден. Обновите страницу.');
+        return;
+      }
+      const uiProduct = products[index];
+      if (!confirm(`Удалить «${uiProduct.title}»?`)) return;
+      const token = getToken();
+      setSavingState(true);
       try {
-        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        await withSaveLock(async () => {
+          await putJsonFileWithRetry(
+            CONFIG.productsPath,
+            token,
+            (json) => {
+              json.products = json.products || [];
+              const idx = findProductIndex(json.products, uiProduct);
+              if (idx < 0) throw new Error('Товар уже удалён на сервере.');
+              json.products = json.products.filter((_, i) => i !== idx);
+              return json;
+            },
+            `admin: delete ${uiProduct.title}`
+          );
+          await putJsonFileWithRetry(
+            CONFIG.homepagePath,
+            token,
+            (homepage) => {
+              homepage.featured = (homepage.featured || []).filter(f => {
+                if (uiProduct.id && f.id) return f.id !== uiProduct.id;
+                return f.title !== uiProduct.title;
+              });
+              return homepage;
+            },
+            `admin: remove ${uiProduct.title} from featured`
+          ).catch(err => {
+            console.warn('[admin] featured cleanup skipped', err);
+          });
         });
-        if (!res.ok) throw new Error(parseGitHubError(res, await res.json().catch(() => ({}))));
-        const data = await res.json();
-        const json = JSON.parse(decodeUTF8Base64(data.content));
-        json.products.splice(index, 1);
-        const updateRes = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
-          method: 'PUT',
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-          body: JSON.stringify({ message: `admin: delete ${title}`, content: encodeUTF8Base64(JSON.stringify(json, null, 2)), sha: data.sha, branch: CONFIG.branch })
-        });
-        if (updateRes.ok) { showSuccess(); loadProducts(token); loadHomepage(token); }
-        else { const err = await updateRes.json(); showError(parseGitHubError(updateRes, err)); }
-      } catch(e) { showError(e.message); }
+        showSuccess();
+        await loadProducts(token);
+        await loadHomepage(token);
+      } catch(e) {
+        console.error('[admin] deleteProduct error', e);
+        showError(e.message);
+      } finally {
+        setSavingState(false);
+      }
     }
 
     // ➕ Добавление нового товара
@@ -519,7 +697,9 @@
 
     async function handleAddProduct(e) {
       e.preventDefault();
-      const token = localStorage.getItem('gh_token');
+      if (document.getElementById('add-form').dataset.saving === 'true') return;
+
+      const token = getToken();
       const title = document.getElementById('new-title').value.trim();
       const info = document.getElementById('new-info').value.trim();
       const price = Number(document.getElementById('new-price').value);
@@ -527,39 +707,67 @@
       const category = document.getElementById('new-category').value;
       const status = document.getElementById('new-status').value;
       const statusEl = document.getElementById('new-upload-status');
+      const form = document.getElementById('add-form');
 
-      if (!title || !info || isNaN(price)) { showError('Заполните название, описание и цену'); return; }
-      statusEl.textContent = '⏳ Сохранение...';
+      const validationError = validateProductInput({ title, info, price });
+      if (validationError) { showError(validationError); return; }
+
+      form.dataset.saving = 'true';
+      setSavingState(true);
+      statusEl.textContent = '⏳ Загрузка медиа...';
 
       try {
         const media = [];
-        for (const item of newMediaQueue) {
+        for (const item of [...newMediaQueue]) {
           const uploaded = await uploadFileToGitHub(item.file, token);
           media.push(uploaded);
         }
 
-        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}?ref=${CONFIG.branch}`, {
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-        });
-        if (!res.ok) throw new Error(parseGitHubError(res, await res.json().catch(() => ({}))));
-        const data = await res.json();
-        const json = JSON.parse(decodeUTF8Base64(data.content));
-
-        json.products.push({
-          title, info, price, height, category, status,
-          media,
+        const newProduct = {
+          id: 'p-' + Date.now(),
+          title,
+          info,
+          price,
+          height,
+          category,
+          status,
+          media: [...media],
           image: getFirstImageSrc(media)
+        };
+
+        console.log('[admin] adding product', newProduct);
+
+        statusEl.textContent = '⏳ Сохранение в каталог...';
+
+        await withSaveLock(async () => {
+          await putJsonFileWithRetry(
+            CONFIG.productsPath,
+            token,
+            (json) => {
+              json.products = [...(json.products || [])];
+              const duplicate = json.products.some(p =>
+                (newProduct.id && p.id === newProduct.id) || p.title === newProduct.title
+              );
+              if (duplicate) throw new Error('Товар с таким названием уже существует.');
+              json.products.push(newProduct);
+              return json;
+            },
+            `admin: add product ${title}`
+          );
         });
 
-        const updateRes = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.productsPath}`, {
-          method: 'PUT',
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-          body: JSON.stringify({ message: `admin: add product ${title}`, content: encodeUTF8Base64(JSON.stringify(json, null, 2)), sha: data.sha, branch: CONFIG.branch })
-        });
-
-        if (updateRes.ok) { showSuccess(); closeAddModal(); loadProducts(token); loadHomepage(token); }
-        else { const err = await updateRes.json(); showError(parseGitHubError(updateRes, err)); }
-      } catch(e) { showError(e.message); } finally { statusEl.textContent = ''; }
+        showSuccess();
+        closeAddModal();
+        await loadProducts(token);
+        await loadHomepage(token);
+      } catch(err) {
+        console.error('[admin] handleAddProduct error', err);
+        showError(err.message);
+      } finally {
+        form.dataset.saving = 'false';
+        setSavingState(false);
+        statusEl.textContent = '';
+      }
     }
 
     // ⭐ & 📞 Загрузка homepage.json
@@ -571,7 +779,9 @@
         });
         if (res.status === 404) {
           window.homepageData = { featured: [], contacts: { city: 'Сочи / Москва', phone: '', email: '', instagram: 'https://www.instagram.com/fifthelement.ceramics', telegram: '' } };
-          await saveHomepageData(window.homepageData, 'init homepage.json');
+          await createJsonFile(CONFIG.homepagePath, token, window.homepageData, 'init homepage.json');
+          renderFeaturedList();
+          renderContactsForm();
           return;
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -589,7 +799,7 @@
       const all = window.productsData?.products || [];
       if (!all.length) { list.innerHTML = '<p class="small">Сначала добавьте товары</p>'; return; }
       list.innerHTML = all.map((p, idx) => {
-        const isFeatured = featured.some(f => f.title === p.title);
+        const isFeatured = featured.some(f => (p.id && f.id && f.id === p.id) || f.title === p.title);
         const imgSrc = getFirstImageSrc(normalizeMedia(p)) || p.image;
         return `
           <div class="featured-item">
@@ -607,19 +817,57 @@
     }
 
     function toggleFeatured(title, add) {
-      const featured = window.homepageData.featured || [];
+      if (!window.homepageData) window.homepageData = { featured: [], contacts: {} };
+      const featured = [...(window.homepageData.featured || [])];
+      const catalog = window.productsData?.products || [];
+      const product = catalog.find(x => x.title === title);
+
       if (add) {
-        const p = (window.productsData?.products || []).find(x => x.title === title);
-        if (p && !featured.some(f => f.title === p.title)) featured.push({ ...p });
+        if (!product) {
+          showError('Товар не найден в каталоге. Обновите страницу.');
+          return;
+        }
+        const exists = featured.some(f => (product.id && f.id === product.id) || f.title === product.title);
+        if (exists) {
+          showError('Этот товар уже в избранном.');
+          return;
+        }
+        featured.push(snapshotForFeatured(product));
       } else {
         const idx = featured.findIndex(f => f.title === title);
-        if (idx >= 0) featured.splice(idx, 1);
+        if (idx < 0) return;
+        featured.splice(idx, 1);
       }
-      window.homepageData.featured = featured;
+
+      window.homepageData = { ...window.homepageData, featured };
       renderFeaturedList();
     }
 
-    async function saveFeatured() { await saveHomepageData(window.homepageData, 'admin: update featured'); }
+    async function saveFeatured() {
+      const token = getToken();
+      const featuredSnapshot = (window.homepageData?.featured || []).map(snapshotForFeatured);
+      setSavingState(true);
+      try {
+        await withSaveLock(async () => {
+          await putJsonFileWithRetry(
+            CONFIG.homepagePath,
+            token,
+            (homepage) => {
+              homepage.featured = featuredSnapshot;
+              return homepage;
+            },
+            'admin: update featured'
+          );
+        });
+        showSuccess();
+        await loadHomepage(token);
+      } catch(e) {
+        console.error('[admin] saveFeatured error', e);
+        showError(e.message);
+      } finally {
+        setSavingState(false);
+      }
+    }
     function renderContactsForm() {
       const c = window.homepageData?.contacts || {};
       document.getElementById('contact-city').value = c.city || '';
@@ -629,30 +877,35 @@
       document.getElementById('contact-telegram').value = c.telegram || '';
     }
     async function saveContacts() {
-      window.homepageData.contacts = {
+      const token = getToken();
+      const contacts = {
         city: document.getElementById('contact-city').value.trim(),
         phone: document.getElementById('contact-phone').value.trim(),
         email: document.getElementById('contact-email').value.trim(),
         instagram: document.getElementById('contact-instagram').value.trim(),
         telegram: document.getElementById('contact-telegram').value.trim()
       };
-      await saveHomepageData(window.homepageData, 'admin: update contacts');
-    }
-    async function saveHomepageData(data, message) {
-      const token = localStorage.getItem('gh_token');
+      setSavingState(true);
       try {
-        const res = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}?ref=${CONFIG.branch}`, {
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        await withSaveLock(async () => {
+          await putJsonFileWithRetry(
+            CONFIG.homepagePath,
+            token,
+            (homepage) => {
+              homepage.contacts = contacts;
+              return homepage;
+            },
+            'admin: update contacts'
+          );
         });
-        const sha = res.ok ? (await res.json()).sha : null;
-        const updateRes = await githubFetch(`https://api.github.com/repos/${CONFIG.repo}/contents/${CONFIG.homepagePath}`, {
-          method: 'PUT',
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' },
-          body: JSON.stringify({ message, content: encodeUTF8Base64(JSON.stringify(data, null, 2)), sha, branch: CONFIG.branch })
-        });
-        if (updateRes.ok) { showSuccess(); loadHomepage(token); }
-        else { const err = await updateRes.json(); showError(err.message || 'Ошибка'); }
-      } catch(e) { showError(e.message); }
+        showSuccess();
+        await loadHomepage(token);
+      } catch(e) {
+        console.error('[admin] saveContacts error', e);
+        showError(e.message);
+      } finally {
+        setSavingState(false);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', handleAuth);
