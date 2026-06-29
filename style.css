@@ -441,6 +441,32 @@ body.menu-open {
   padding: var(--space-16) var(--space-4);
 }
 
+.hero-content > * {
+  animation: heroFadeUp 0.85s var(--ease-out) backwards;
+}
+
+.hero-tag { animation-delay: 0.08s; }
+.hero h1 { animation-delay: 0.18s; }
+.hero-description { animation-delay: 0.28s; }
+.hero-buttons { animation-delay: 0.38s; }
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-content > * {
+    animation: none;
+  }
+}
+
 .hero-tag {
   font-family: var(--font-body);
   font-size: var(--text-xs);
@@ -705,14 +731,22 @@ body.menu-open {
   object-position: center;
   border-radius: inherit;
   opacity: 0;
+  z-index: 0;
   transform: scale(1);
-  transition: opacity 0.45s ease, transform 0.5s ease;
+  transition: opacity 0.52s ease, transform 0.55s ease;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.product-gallery__media.is-prev {
+  opacity: 0;
+  z-index: 1;
   pointer-events: none;
 }
 
 .product-gallery__media.is-active {
   opacity: 1;
-  z-index: 1;
+  z-index: 2;
   pointer-events: auto;
 }
 
@@ -1462,6 +1496,12 @@ html:not(.js-anim) .scale-in {
     transform: none !important;
     transition: none !important;
   }
+
+  .product-gallery__media,
+  .product-modal__media {
+    transition: none !important;
+    will-change: auto;
+  }
 }
 
 /* Page entrance */
@@ -1711,9 +1751,11 @@ body.modal-open {
   object-position: center;
   background: var(--color-surface-offset);
   opacity: 0;
-  transform: scale(1.03);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 0;
+  transform: scale(1);
+  transition: opacity 0.52s ease, transform 0.52s ease;
   pointer-events: none;
+  will-change: opacity;
 }
 
 .product-modal__media:is(video) {
@@ -1721,10 +1763,15 @@ body.modal-open {
   border-radius: inherit;
 }
 
+.product-modal__media.is-prev {
+  opacity: 0;
+  z-index: 1;
+}
+
 .product-modal__media.is-active {
   opacity: 1;
   transform: scale(1);
-  z-index: 1;
+  z-index: 2;
   pointer-events: auto;
 }
 

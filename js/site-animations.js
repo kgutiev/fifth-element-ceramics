@@ -5,12 +5,22 @@
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let observer = null;
 
+  function isInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    return rect.top < window.innerHeight * 0.92 && rect.bottom > 8;
+  }
+
+  function markVisible(el) {
+    el.classList.add('visible');
+    if (observer) observer.unobserve(el);
+  }
+
   function observeAnimatedElements(root) {
     const scope = root || document;
     const elements = scope.querySelectorAll(SELECTORS);
 
     if (reducedMotion) {
-      elements.forEach((el) => el.classList.add('visible'));
+      elements.forEach(markVisible);
       return;
     }
 
@@ -19,16 +29,20 @@
         (entries) => {
           entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
+            markVisible(entry.target);
           });
         },
-        { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+        { threshold: 0.08, rootMargin: '0px 0px -24px 0px' }
       );
     }
 
     elements.forEach((el) => {
-      if (!el.classList.contains('visible')) observer.observe(el);
+      if (el.classList.contains('visible')) return;
+      if (isInViewport(el)) {
+        markVisible(el);
+        return;
+      }
+      observer.observe(el);
     });
   }
 
@@ -63,5 +77,5 @@
     init();
   }
 
-  global.SiteAnimations = { observe: observeAnimatedElements };
+  global.SiteAnimations = { observe: observeAnimatedElements, reveal: observeAnimatedElements };
 })();

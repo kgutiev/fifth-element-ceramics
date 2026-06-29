@@ -206,7 +206,10 @@
           grid.innerHTML = data.products.map((p, i) => ProductCatalog.renderProductCard(p, i)).join('');
           ProductCatalog.initGalleries(grid);
           ProductCatalog.initProductModal('#product-grid', 'data-product-index');
-          if (window.SiteAnimations) SiteAnimations.observe(grid);
+          if (window.SiteAnimations) {
+            window.SiteAnimations.reveal(grid);
+            requestAnimationFrame(() => window.SiteAnimations.reveal(grid));
+          }
           initFilters();
         })
         .catch(err => {

@@ -154,15 +154,32 @@
       let autoTimer = null;
 
       function showSlide(index) {
+        if (index === current && items[index]?.classList.contains('is-active')) return;
+        const prevIndex = current;
         current = index;
+
         items.forEach((el, i) => {
-          const active = i === index;
-          el.classList.toggle('is-active', active);
-          if (el.tagName === 'VIDEO') {
-            if (active) el.play().catch(() => {});
-            else { el.pause(); el.currentTime = 0; }
+          if (i === index) {
+            el.classList.add('is-active');
+            el.classList.remove('is-prev');
+            if (el.tagName === 'VIDEO') el.play().catch(() => {});
+          } else if (i === prevIndex) {
+            el.classList.remove('is-active');
+            el.classList.add('is-prev');
+            if (el.tagName === 'VIDEO') {
+              el.pause();
+              el.currentTime = 0;
+            }
+            window.setTimeout(() => el.classList.remove('is-prev'), 520);
+          } else {
+            el.classList.remove('is-active', 'is-prev');
+            if (el.tagName === 'VIDEO') {
+              el.pause();
+              el.currentTime = 0;
+            }
           }
         });
+
         dots.forEach((dot, i) => {
           dot.classList.toggle('is-active', i === index);
           dot.setAttribute('aria-selected', String(i === index));
@@ -223,17 +240,33 @@
 
   function setModalSlide(index, media) {
     if (!modalViewport) return;
-    modalSlideIndex = index;
     const items = modalViewport.querySelectorAll('.product-modal__media');
-    const dots = modalDots?.querySelectorAll('.product-modal__dot') || [];
+    const prevIndex = modalSlideIndex;
+    modalSlideIndex = index;
+
     items.forEach((el, i) => {
-      const active = i === index;
-      el.classList.toggle('is-active', active);
-      if (el.tagName === 'VIDEO') {
-        if (active) el.play().catch(() => {});
-        else { el.pause(); el.currentTime = 0; }
+      if (i === index) {
+        el.classList.add('is-active');
+        el.classList.remove('is-prev');
+        if (el.tagName === 'VIDEO') el.play().catch(() => {});
+      } else if (i === prevIndex) {
+        el.classList.remove('is-active');
+        el.classList.add('is-prev');
+        if (el.tagName === 'VIDEO') {
+          el.pause();
+          el.currentTime = 0;
+        }
+        window.setTimeout(() => el.classList.remove('is-prev'), 520);
+      } else {
+        el.classList.remove('is-active', 'is-prev');
+        if (el.tagName === 'VIDEO') {
+          el.pause();
+          el.currentTime = 0;
+        }
       }
     });
+
+    const dots = modalDots?.querySelectorAll('.product-modal__dot') || [];
     dots.forEach((dot, i) => {
       dot.classList.toggle('is-active', i === index);
       dot.setAttribute('aria-selected', String(i === index));
@@ -343,12 +376,15 @@
   }
 
   function openProductModalByTitle(title) {
-    const fromCatalog = productsData.find(p => p.title === title);
+    const normalized = normalizeTitle(title);
+    const fromCatalog = productsData.find((p) => normalizeTitle(p.title) === normalized);
     if (fromCatalog) {
       openProductModalWithProduct(fromCatalog);
       return;
     }
-    const fromFeatured = (global.featuredProducts || []).find(p => p.title === title);
+    const fromFeatured = (global.featuredProducts || []).find(
+      (p) => normalizeTitle(p.title) === normalized
+    );
     if (fromFeatured) openProductModalWithProduct(fromFeatured);
   }
 
@@ -451,15 +487,44 @@
     initModalSwipe();
   }
 
+  function normalizeTitle(str) {
+    return (str || '')
+      .replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g, '"')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  function findProduct(catalog, item) {
+    if (!item) return null;
+    if (item.id) {
+      const byId = catalog.find((p) => p.id === item.id);
+      if (byId) return byId;
+    }
+    const title = normalizeTitle(item.title);
+    return catalog.find((p) => normalizeTitle(p.title) === title) || null;
+  }
+
+  function pickMedia(featuredItem, catalogItem) {
+    const fMedia = featuredItem?.media || [];
+    const cMedia = catalogItem?.media || [];
+    if (fMedia.length && cMedia.length) {
+      return fMedia.length >= cMedia.length ? fMedia : cMedia;
+    }
+    return fMedia.length ? fMedia : cMedia;
+  }
+
   function mergeFeaturedWithCatalog(featured, catalog) {
-    return featured.map(f => {
-      const full = catalog.find(p => p.title === f.title);
+    return featured.map((f) => {
+      const full = findProduct(catalog, f);
       if (!full) return f;
+      const media = pickMedia(f, full);
       return {
         ...full,
         ...f,
-        media: full.media?.length ? full.media : f.media,
-        image: full.image || f.image
+        id: full.id || f.id,
+        media: media.length ? media : full.media || f.media,
+        image: f.image || full.image
       };
     });
   }
@@ -468,11 +533,15 @@
     let featured = homepage?.featured || [];
     let isFallback = false;
 
+    if (featured.length) {
+      featured = mergeFeaturedWithCatalog(featured, catalog).filter(
+        (p) => normalizeMedia(p).length > 0
+      );
+    }
+
     if (!featured.length && catalog.length) {
-      featured = catalog.slice(0, 3);
+      featured = catalog.filter((p) => normalizeMedia(p).length > 0).slice(0, 3);
       isFallback = true;
-    } else if (featured.length) {
-      featured = mergeFeaturedWithCatalog(featured, catalog);
     }
 
     return { featured, isFallback };

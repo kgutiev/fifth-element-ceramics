@@ -306,13 +306,16 @@
           subtitle.textContent = 'Избранное — популярные работы из каталога';
         }
 
-        grid.innerHTML = featured.map((p) =>
-          ProductCatalog.renderProductCard(p, 0, { useTitle: true })
+        grid.innerHTML = featured.map((p, i) =>
+          ProductCatalog.renderProductCard(p, i, { useTitle: true })
         ).join('');
 
         ProductCatalog.initGalleries(grid);
         ProductCatalog.initProductModal('#featured-grid', 'data-product-title');
-        if (window.SiteAnimations) SiteAnimations.observe(grid);
+        if (window.SiteAnimations) {
+          window.SiteAnimations.reveal(grid);
+          requestAnimationFrame(() => window.SiteAnimations.reveal(grid));
+        }
       } catch (err) {
         console.error('Ошибка загрузки избранного:', err);
         grid.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:2rem;">Не удалось загрузить избранное.</p>';
