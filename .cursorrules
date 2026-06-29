@@ -10,6 +10,7 @@
 
 ## File conventions
 - Public pages: `index.html`, `catalog.html`, `about.html`, `contact.html`
+- Shared JS: `js/product-modal.js` (modal, normalizeMedia, renderProductCard)
 - Styles: `base.css` (reset + a11y), `style.css` (design tokens + components)
 - Inline `<script>` at end of `<body>` — no external JS bundles
 - Scripts must NOT block rendering; no `<script src>` in `<head>` without `defer`
@@ -27,6 +28,7 @@
   "media": [{ "type": "image|video", "src": "./assets/..." }]
 }
 ```
+- `media[].src` or legacy `media[].url` (url normalized to src)
 - `image` is kept for backward compatibility (first image in `media`)
 - `normalizeMedia()`: if `media` missing, migrate from `image`
 

@@ -109,8 +109,8 @@
                 <circle cx="24" cy="26" r="4" fill="currentColor" opacity="0.2"/>
               </svg>
             </div>
-            <h3>Керамические объекты</h3>
-            <p>Вазы, кружки, пашотницы, подсвечники и декор — каждое изделие уникально. Отпечатки пальцев и лёгкая асимметрия — часть характера.</p>
+            <h3 class="feature-title">Керамические объекты</h3>
+            <p class="feature-desc">Вазы, кружки, пашотницы, подсвечники и декор — каждое изделие уникально. Отпечатки пальцев и лёгкая асимметрия — часть характера.</p>
           </div>
           <div class="feature-card fade-in">
             <div class="feature-icon">
@@ -119,8 +119,8 @@
                 <path d="M16 24h16M24 16v16" stroke-width="1.5"/>
               </svg>
             </div>
-            <h3>Мастер-классы</h3>
-            <p>Лепка из глины в уютной атмосфере с бокалом игристого. 2 часа творчества — и вы уносите домой изделие, сделанное своими руками.</p>
+            <h3 class="feature-title">Мастер-классы</h3>
+            <p class="feature-desc">Лепка из глины в уютной атмосфере с бокалом игристого. 2 часа творчества — и вы уносите домой изделие, сделанное своими руками.</p>
           </div>
           <div class="feature-card fade-in">
             <div class="feature-icon">
@@ -129,8 +129,8 @@
                 <path d="M24 12v12l8 8"/>
               </svg>
             </div>
-            <h3>Союз стихий</h3>
-            <p>Земля, вода, воздух и огонь — четыре элемента, из которых рождается каждое изделие. Пятый элемент — это любовь к ремеслу.</p>
+            <h3 class="feature-title">Союз стихий</h3>
+            <p class="feature-desc">Земля, вода, воздух и огонь — четыре элемента, из которых рождается каждое изделие. Пятый элемент — это любовь к ремеслу.</p>
           </div>
         </div>
       </div>
@@ -160,61 +160,10 @@
         <div class="section-header fade-in">
           <p class="section-tag">Избранное</p>
           <h2 class="section-title">Наши работы</h2>
-          <p class="section-subtitle">Каждое изделие существует в единственном экземпляре</p>
+          <p class="section-subtitle" id="featured-subtitle">Каждое изделие существует в единственном экземпляре</p>
         </div>
-        <div class="product-grid">
-          <div class="product-card fade-in">
-            <div class="product-card-image">
-              <img src="./assets/workshop-closeup.jpg" alt="Ваза серии Terra — фактурная керамика" width="570" height="760" loading="lazy" decoding="async">
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Терра»</h3>
-              <p class="product-card-info">Каменная масса, глазурь · В. 28 см</p>
-              <p class="product-card-price">8 500 ₽</p>
-            </div>
-          </div>
-          <div class="product-card fade-in">
-            <div class="product-card-image">
-              <img src="./assets/textured-vase.jpg" alt="Ваза Нуар" width="570" height="570" loading="lazy" decoding="async">
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Нуар»</h3>
-              <p class="product-card-info">Чёрная масса G&S 371, без глазури · В. 22 см</p>
-              <p class="product-card-price">6 800 ₽</p>
-            </div>
-          </div>
-          <div class="product-card fade-in">
-            <div class="product-card-image">
-              <img src="./assets/turquoise-vase.jpg" alt="Ваза Бриз" width="570" height="635" loading="lazy" decoding="async">
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Бриз»</h3>
-              <p class="product-card-info">Каменная масса, бирюзовая глазурь · В. 32 см</p>
-              <p class="product-card-price">12 000 ₽</p>
-            </div>
-          </div>
-          <div class="product-card fade-in">
-            <div class="product-card-image">
-              <img src="./assets/crater-vase.jpg" alt="Ваза «Луна» с текстурой кратеров" width="698" height="939" loading="lazy" decoding="async">
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Луна»</h3>
-              <p class="product-card-info">Каменная масса, текстура кратеров · В. 22 см</p>
-              <p class="product-card-price">5 200 ₽</p>
-            </div>
-          </div>
-          <div class="product-card product-card--video fade-in">
-            <div class="product-card-image">
-              <video autoplay muted loop playsinline preload="metadata" width="570" height="760">
-                <source src="./assets/product-video.mp4" type="video/mp4">
-              </video>
-            </div>
-            <div class="product-card-body">
-              <h3 class="product-card-title">Ваза «Терра»</h3>
-              <p class="product-card-info">Серия Terra · Фактурная керамика</p>
-              <p class="product-card-price">Смотреть видео</p>
-            </div>
-          </div>
+        <div class="product-grid" id="featured-grid">
+          <p style="text-align:center;color:var(--color-text-muted);padding:2rem 0;">Загрузка...</p>
         </div>
         <div style="text-align: center; margin-top: var(--space-8);">
           <a href="./catalog.html" class="btn btn--outline">Весь каталог</a>
@@ -309,6 +258,53 @@
     </div>
   </footer>
 
+  <!-- Product lightbox -->
+  <div id="product-modal" class="product-modal" hidden aria-hidden="true">
+    <div class="product-modal__backdrop" data-modal-close tabindex="-1"></div>
+    <div class="product-modal__panel" role="dialog" aria-modal="true" aria-labelledby="product-modal-title">
+      <button type="button" class="product-modal__close" data-modal-close aria-label="Закрыть">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="product-modal__layout">
+        <div class="product-modal__gallery-wrap">
+          <div class="product-modal__gallery" data-modal-gallery tabindex="0" aria-roledescription="carousel">
+            <div class="product-modal__viewport" data-modal-viewport></div>
+            <div class="product-modal__dots" role="tablist" data-modal-dots></div>
+            <button type="button" class="product-modal__nav product-modal__nav--prev" data-modal-prev aria-label="Предыдущий слайд">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="product-modal__nav product-modal__nav--next" data-modal-next aria-label="Следующий слайд">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="product-modal__info">
+          <h2 id="product-modal-title" class="product-modal__title" data-modal-title></h2>
+          <p class="product-modal__description" data-modal-description></p>
+          <div class="product-modal__meta" data-modal-meta hidden>
+            <div class="product-modal__meta-item" data-modal-category-wrap hidden>
+              <span class="product-modal__meta-label">Категория</span>
+              <span class="product-modal__meta-value" data-modal-category></span>
+            </div>
+            <div class="product-modal__meta-item" data-modal-height-wrap hidden>
+              <span class="product-modal__meta-label">Размер</span>
+              <span class="product-modal__meta-value" data-modal-height></span>
+            </div>
+          </div>
+          <div class="product-modal__pricing">
+            <p class="product-modal__price" data-modal-price></p>
+            <span class="product-modal__status" data-modal-status hidden></span>
+          </div>
+          <div class="product-modal__actions">
+            <a href="./contact.html" class="btn btn--primary">Заказать</a>
+            <button type="button" class="btn btn--outline" data-modal-close>Закрыть</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/product-modal.js"></script>
   <script>
     // Theme toggle
     (function(){
@@ -330,6 +326,47 @@
     window.addEventListener('scroll', () => {
       document.getElementById('site-header').classList.toggle('site-header--scrolled', window.scrollY > 10);
     }, { passive: true });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      ProductCatalog.initModalElement();
+      const grid = document.getElementById('featured-grid');
+      const subtitle = document.getElementById('featured-subtitle');
+      if (!grid) return;
+
+      try {
+        const [productsRes, homeRes] = await Promise.all([
+          fetch(new URL('./data/products.json', window.location.href)),
+          fetch(new URL('./data/homepage.json', window.location.href))
+        ]);
+        if (!productsRes.ok || !homeRes.ok) throw new Error('Ошибка загрузки данных');
+
+        const catalog = (await productsRes.json()).products || [];
+        const homepage = await homeRes.json();
+        ProductCatalog.setProducts(catalog);
+
+        const { featured, isFallback } = ProductCatalog.resolveFeatured(homepage, catalog);
+        window.featuredProducts = featured;
+
+        if (!featured.length) {
+          grid.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:2rem;">Избранные работы скоро появятся.</p>';
+          return;
+        }
+
+        if (isFallback && subtitle) {
+          subtitle.textContent = 'Избранное — популярные работы из каталога';
+        }
+
+        grid.innerHTML = featured.map((p) =>
+          ProductCatalog.renderProductCard(p, 0, { useTitle: true })
+        ).join('');
+
+        ProductCatalog.initGalleries(grid);
+        ProductCatalog.initProductModal('#featured-grid', 'data-product-title');
+      } catch (err) {
+        console.error('Ошибка загрузки избранного:', err);
+        grid.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:2rem;">Не удалось загрузить избранное.</p>';
+      }
+    });
   </script>
 </body>
 </html>
