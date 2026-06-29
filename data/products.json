@@ -88,7 +88,17 @@
       "height": "Высота 34 см; Обхват 77 см",
       "image": "./assets/uploads/1782733759417_image-29-06-26-02-28-1.jpeg",
       "category": "vases",
-      "status": "В наличии"
+      "status": "В наличии",
+      "media": [
+        {
+          "type": "image",
+          "src": "./assets/uploads/1782733759417_image-29-06-26-02-28-1.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1782736580150_image-29-06-26-02-28.jpeg"
+        }
+      ]
     }
   ]
 }
