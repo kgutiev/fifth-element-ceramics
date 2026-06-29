@@ -97,6 +97,10 @@
         {
           "type": "image",
           "src": "./assets/uploads/1782736580150_image-29-06-26-02-28.jpeg"
+        },
+        {
+          "type": "video",
+          "src": "./assets/uploads/1782737464519_video-29-06-26-02-31.mp4"
         }
       ]
     }
