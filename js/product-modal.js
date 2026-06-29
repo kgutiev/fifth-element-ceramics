@@ -124,8 +124,10 @@
         Нажмите для просмотра
       </p>`;
 
+    const delayClass = 'delay-' + ((index % 4) + 1);
+
     return `
-      <article class="product-card fade-in" data-category="${cat}" ${indexAttr} tabindex="0" role="button" aria-label="Открыть: ${escapeAttr(p.title)}">
+      <article class="product-card fade-in-up ${delayClass}" data-category="${cat}" ${indexAttr} tabindex="0" role="button" aria-label="Открыть: ${escapeAttr(p.title)}">
         ${imageBlock}
         <div class="product-card-body">
           <h3 class="product-card-title">${title}</h3>
@@ -139,6 +141,8 @@
   }
 
   function initGalleries(root) {
+    const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     (root || document).querySelectorAll('[data-gallery]').forEach(gallery => {
       if (gallery.dataset.bound) return;
       gallery.dataset.bound = 'true';
@@ -146,7 +150,11 @@
       const dots = gallery.querySelectorAll('.product-gallery__dot');
       if (!items.length) return;
 
+      let current = 0;
+      let autoTimer = null;
+
       function showSlide(index) {
+        current = index;
         items.forEach((el, i) => {
           const active = i === index;
           el.classList.toggle('is-active', active);
@@ -161,18 +169,55 @@
         });
       }
 
+      function stopAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+      }
+
+      function startAuto() {
+        if (items.length <= 1 || prefersReduced) return;
+        stopAuto();
+        autoTimer = setInterval(() => {
+          if (gallery.matches(':hover') || gallery.matches(':focus-within')) return;
+          showSlide((current + 1) % items.length);
+        }, 4000);
+      }
+
       dots.forEach(dot => {
         dot.addEventListener('click', (e) => {
           e.stopPropagation();
           showSlide(Number(dot.dataset.index));
+          stopAuto();
+          startAuto();
         });
       });
 
       gallery.addEventListener('keydown', (e) => {
-        const current = [...items].findIndex(el => el.classList.contains('is-active'));
-        if (e.key === 'ArrowRight') { e.preventDefault(); showSlide((current + 1) % items.length); }
-        if (e.key === 'ArrowLeft') { e.preventDefault(); showSlide((current - 1 + items.length) % items.length); }
+        const idx = [...items].findIndex(el => el.classList.contains('is-active'));
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          showSlide((idx + 1) % items.length);
+          stopAuto();
+          startAuto();
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          showSlide((idx - 1 + items.length) % items.length);
+          stopAuto();
+          startAuto();
+        }
       });
+
+      gallery.addEventListener('mouseenter', stopAuto);
+      gallery.addEventListener('mouseleave', startAuto);
+      gallery.addEventListener('focusin', stopAuto);
+      gallery.addEventListener('focusout', (e) => {
+        if (!gallery.contains(e.relatedTarget)) startAuto();
+      });
+
+      startAuto();
     });
   }
 

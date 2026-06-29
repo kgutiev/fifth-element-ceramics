@@ -82,7 +82,7 @@
     <!-- CTA -->
     <section class="section" style="background: var(--color-surface);">
       <div class="container container--narrow">
-        <div class="cta-banner fade-in">
+        <div class="cta-banner fade-in-up">
           <h2>Не нашли то, что искали?</h2>
           <p>Мы создаём изделия на заказ: выбирайте форму, размер и цвет глазури. Расскажите о вашей идее, и мы воплотим её в жизнь.</p>
           <a href="./contact.html" class="btn btn--primary">Обсудить заказ</a>
@@ -163,6 +163,7 @@
   </div>
 
   <script src="./js/site-header.js"></script>
+  <script src="./js/site-animations.js"></script>
   <script src="./js/product-modal.js"></script>
   <script>
     function initFilters() {
@@ -205,6 +206,7 @@
           grid.innerHTML = data.products.map((p, i) => ProductCatalog.renderProductCard(p, i)).join('');
           ProductCatalog.initGalleries(grid);
           ProductCatalog.initProductModal('#product-grid', 'data-product-index');
+          if (window.SiteAnimations) SiteAnimations.observe(grid);
           initFilters();
         })
         .catch(err => {

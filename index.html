@@ -79,7 +79,7 @@
     <!-- SELECTED WORKS -->
     <section class="section">
       <div class="container">
-        <div class="section-header fade-in">
+        <div class="section-header fade-in-up">
           <p class="section-tag">Избранное</p>
           <h2 class="section-title">Наши работы</h2>
           <p class="section-subtitle" id="featured-subtitle">Каждое изделие существует в единственном экземпляре</p>
@@ -96,29 +96,29 @@
     <!-- PROCESS -->
     <section class="section" style="background: var(--color-surface);">
       <div class="container">
-        <div class="section-header fade-in">
+        <div class="section-header fade-in-up">
           <p class="section-tag">Как мы работаем</p>
           <h2 class="section-title">От глины к готовому изделию</h2>
         </div>
-        <div class="process-video-block fade-in">
+        <div class="process-video-block scale-in">
           <video autoplay muted loop playsinline preload="metadata" class="process-showcase-video" width="1280" height="720">
             <source src="./assets/process-video.mp4" type="video/mp4">
           </video>
         </div>
         <div class="process-steps">
-          <div class="process-step fade-in">
+          <div class="process-step fade-in-up delay-1">
             <h3>Замысел</h3>
             <p>Каждое изделие начинается с идеи — формы, фактуры и настроения, которые оно должно передать.</p>
           </div>
-          <div class="process-step fade-in">
+          <div class="process-step fade-in-up delay-2">
             <h3>Лепка</h3>
             <p>Ручная лепка из пластов и жгутов. Глина Georg & Schneider — основа будущей вазы.</p>
           </div>
-          <div class="process-step fade-in">
+          <div class="process-step fade-in-up delay-3">
             <h3>Сушка и утиль</h3>
             <p>Медленная сушка и первый обжиг при 900°C превращают хрупкую глину в прочный бисквит.</p>
           </div>
-          <div class="process-step fade-in">
+          <div class="process-step fade-in-up delay-4">
             <h3>Глазурь и обжиг</h3>
             <p>Нанесение авторских глазурей Terracolor и финальный обжиг при 1230°C. Здесь рождается характер изделия.</p>
           </div>
@@ -129,7 +129,7 @@
     <!-- CTA -->
     <section class="section">
       <div class="container container--narrow">
-        <div class="cta-banner fade-in">
+        <div class="cta-banner fade-in-up">
           <div class="cta-video-wrap">
             <video autoplay muted loop playsinline preload="metadata" class="cta-video" width="120" height="120">
               <source src="./assets/masterclass-video.mp4" type="video/mp4">
@@ -274,6 +274,7 @@
   </div>
 
   <script src="./js/site-header.js"></script>
+  <script src="./js/site-animations.js"></script>
   <script src="./js/product-modal.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -311,6 +312,7 @@
 
         ProductCatalog.initGalleries(grid);
         ProductCatalog.initProductModal('#featured-grid', 'data-product-title');
+        if (window.SiteAnimations) SiteAnimations.observe(grid);
       } catch (err) {
         console.error('Ошибка загрузки избранного:', err);
         grid.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:2rem;">Не удалось загрузить избранное.</p>';
