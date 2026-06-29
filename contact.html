@@ -30,37 +30,20 @@
 <body>
   <!-- HEADER -->
   <header class="site-header" id="site-header">
-    <div class="header-inner">
-      <a href="./index.html" class="logo" aria-label="Fifth Element Ceramics — Главная">
-        <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img" width="40" height="40" decoding="async">
-        <div class="logo-text">Fifth Element<span>Ceramics</span></div>
-      </a>
-      <nav class="nav-desktop">
-        <a href="./index.html">Главная</a>
-        <a href="./catalog.html">Каталог</a>
-        <a href="./about.html">О мастере</a>
-        <a href="./contact.html" class="active">Заказать</a>
-      </nav>
-      <div class="nav-controls">
-        <button class="theme-toggle" data-theme-toggle aria-label="Переключить тему">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-        <button class="menu-toggle" aria-label="Открыть меню" onclick="document.querySelector('.nav-mobile').classList.add('open')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <nav class="nav-mobile" id="nav-mobile">
-    <button class="nav-mobile-close" aria-label="Закрыть меню" onclick="document.querySelector('.nav-mobile').classList.remove('open')">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <a href="./index.html" class="site-logo" aria-label="Fifth Element Ceramics — Главная">
+      <img src="./assets/logo.jpeg" alt="" class="logo-img" width="40" height="40" decoding="async">
+      <div class="logo-text">Fifth Element<span>Ceramics</span></div>
+    </a>
+    <nav class="site-nav" aria-label="Основная навигация">
+      <a href="./index.html">Главная</a>
+      <a href="./catalog.html">Каталог</a>
+      <a href="./about.html">О мастере</a>
+      <a href="./contact.html" class="active">Заказать</a>
+    </nav>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Переключить тему">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
-    <a href="./index.html">Главная</a>
-    <a href="./catalog.html">Каталог</a>
-    <a href="./about.html">О мастере</a>
-    <a href="./contact.html">Заказать</a>
-  </nav>
+  </header>
 
   <main>
     <section class="page-hero">
@@ -159,29 +142,24 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <a href="./index.html" class="logo" aria-label="Fifth Element Ceramics — Главная">
-            <img src="./assets/logo.jpeg" alt="Fifth Element Ceramics" class="logo-img" width="40" height="40" decoding="async">
-            <div class="logo-text">Fifth Element<span>Ceramics</span></div>
-          </a>
-          <p>Керамические объекты и мастер-классы. Сочи / Москва.</p>
-        </div>
-        <div class="footer-links">
-          <h4>Навигация</h4>
-          <ul><li><a href="./index.html">Главная</a></li><li><a href="./catalog.html">Каталог</a></li><li><a href="./about.html">О мастере</a></li><li><a href="./contact.html">Заказать</a></li></ul>
-        </div>
-        <div class="footer-links">
-          <h4>Контакты</h4>
-          <ul><li><a href="https://www.instagram.com/fifthelement.ceramics" target="_blank" rel="noopener noreferrer">Instagram</a></li><li><a href="https://t.me/k_koshel" target="_blank" rel="noopener noreferrer">Telegram</a></li><li>Сочи / Москва</li></ul>
-        </div>
+    <div class="footer-grid footer-grid--site">
+      <div class="footer-brand">
+        <a href="./index.html" class="site-logo" aria-label="Fifth Element Ceramics — Главная">
+          <img src="./assets/logo.jpeg" alt="" class="logo-img" width="40" height="40" decoding="async">
+          <div class="logo-text">Fifth Element<span>Ceramics</span></div>
+        </a>
+        <p>Керамические объекты и мастер-классы. Сочи / Москва.</p>
       </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 Fifth Element Ceramics</span>
-        <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+      <div class="footer-links">
+        <h4>Навигация</h4>
+        <ul><li><a href="./index.html">Главная</a></li><li><a href="./catalog.html">Каталог</a></li><li><a href="./about.html">О мастере</a></li><li><a href="./contact.html">Заказать</a></li></ul>
+      </div>
+      <div class="footer-links">
+        <h4>Контакты</h4>
+        <ul><li><a href="https://www.instagram.com/fifthelement.ceramics" target="_blank" rel="noopener noreferrer">Instagram</a></li><li><a href="https://t.me/k_koshel" target="_blank" rel="noopener noreferrer">Telegram</a></li><li>Сочи / Москва</li></ul>
       </div>
     </div>
+    <div class="footer-copyright">&copy; 2026 Fifth Element Ceramics</div>
   </footer>
 
   <script>
