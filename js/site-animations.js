@@ -97,5 +97,7 @@
     init();
   }
 
-  global.SiteAnimations = { observe: observeAnimatedElements, reveal: observeAnimatedElements };
-})();
+  if (typeof global !== 'undefined' && global) {
+    global.SiteAnimations = { observe: observeAnimatedElements, reveal: observeAnimatedElements };
+  }
+})(typeof window !== 'undefined' ? window : globalThis);
