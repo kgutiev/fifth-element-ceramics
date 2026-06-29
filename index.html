@@ -314,7 +314,6 @@
         ProductCatalog.initProductModal('#featured-grid', 'data-product-title');
         if (window.SiteAnimations) {
           window.SiteAnimations.reveal(grid);
-          requestAnimationFrame(() => window.SiteAnimations.reveal(grid));
         }
       } catch (err) {
         console.error('Ошибка загрузки избранного:', err);

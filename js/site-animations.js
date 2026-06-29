@@ -7,7 +7,8 @@
 
   function isInViewport(el) {
     const rect = el.getBoundingClientRect();
-    return rect.top < window.innerHeight * 0.92 && rect.bottom > 8;
+    if (rect.width === 0 && rect.height === 0) return false;
+    return rect.top < window.innerHeight * 0.95 && rect.bottom > 0;
   }
 
   function markVisible(el) {
@@ -15,8 +16,7 @@
     if (observer) observer.unobserve(el);
   }
 
-  function observeAnimatedElements(root) {
-    const scope = root || document;
+  function processElements(scope) {
     const elements = scope.querySelectorAll(SELECTORS);
 
     if (reducedMotion) {
@@ -32,7 +32,7 @@
             markVisible(entry.target);
           });
         },
-        { threshold: 0.08, rootMargin: '0px 0px -24px 0px' }
+        { threshold: 0.05, rootMargin: '0px 0px 0px 0px' }
       );
     }
 
@@ -40,10 +40,30 @@
       if (el.classList.contains('visible')) return;
       if (isInViewport(el)) {
         markVisible(el);
-        return;
+      } else {
+        observer.observe(el);
       }
-      observer.observe(el);
     });
+  }
+
+  function observeAnimatedElements(root) {
+    const scope = root || document;
+
+    processElements(scope);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        processElements(scope);
+      });
+    });
+
+    if (root) {
+      setTimeout(() => {
+        scope.querySelectorAll(SELECTORS).forEach((el) => {
+          if (!el.classList.contains('visible')) markVisible(el);
+        });
+      }, 500);
+    }
   }
 
   function initHeroParallax() {

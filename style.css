@@ -646,7 +646,7 @@ body.menu-open {
   border: 1px solid var(--color-divider);
   text-decoration: none;
   color: var(--color-text);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   cursor: pointer;
 }
 
@@ -735,7 +735,6 @@ body.menu-open {
   transform: scale(1);
   transition: opacity 0.52s ease, transform 0.55s ease;
   pointer-events: none;
-  will-change: opacity;
 }
 
 .product-gallery__media.is-prev {
@@ -1456,6 +1455,15 @@ body.menu-open {
   transform: translateY(0);
 }
 
+.product-card.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.product-card.fade-in-up.visible:hover {
+  transform: translateY(-8px);
+}
+
 .fade-in {
   opacity: 0;
   transition: opacity 0.8s ease;
@@ -1755,7 +1763,6 @@ body.modal-open {
   transform: scale(1);
   transition: opacity 0.52s ease, transform 0.52s ease;
   pointer-events: none;
-  will-change: opacity;
 }
 
 .product-modal__media:is(video) {
