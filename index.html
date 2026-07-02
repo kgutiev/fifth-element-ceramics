@@ -33,18 +33,7 @@
 <body>
   <!-- HEADER -->
   <header class="site-header" id="site-header">
-    <a href="./index.html" class="site-logo" aria-label="Fifth Element Ceramics — Главная">
-      <img src="./assets/logo.jpeg" alt="" width="40" height="40" decoding="async">
-      <span class="site-brand">Fifth Element Ceramics</span>
-    </a>
-    <div class="header-controls">
-      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Переключить тему">
-        <span data-theme-icon aria-hidden="true">🌙</span>
-      </button>
-      <button type="button" class="menu-toggle" aria-label="Открыть меню" aria-controls="fullscreen-menu" aria-expanded="false">
-        <span aria-hidden="true">☰</span>
-      </button>
-    </div>
+    <button type="button" class="menu-toggle" aria-label="Открыть меню" aria-controls="fullscreen-menu" aria-expanded="false">☰</button>
   </header>
 
   <nav class="fullscreen-menu" id="fullscreen-menu" aria-label="Основное меню" aria-hidden="true" inert>
@@ -53,38 +42,26 @@
     </button>
     <a href="./index.html" class="active">Главная</a>
     <a href="./catalog.html">Каталог</a>
-    <a href="./about.html">О мастере</a>
+    <a href="./about.html">О нас</a>
     <a href="./contact.html">Заказать</a>
   </nav>
 
   <main>
     <!-- HERO -->
-    <section class="hero">
-      <div class="hero-bg">
-        <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="./assets/hero-poster.jpg" width="1920" height="1080">
-          <source src="./assets/hero-video.mp4" type="video/mp4">
-        </video>
+    <section class="hero hero-section">
+      <div class="hero-bg hero-image">
+        <img src="./assets/hero-image.jpg" alt="Fifth Element Ceramics" loading="eager" width="1920" height="1280" decoding="async">
         <div class="hero-overlay"></div>
       </div>
-      <div class="hero-content">
-        <p class="hero-tag">Сочи / Москва</p>
-        <h1>Когда стихии вступают в союз</h1>
-        <p class="hero-description">Земля, вода, воздух и огонь — из их союза рождается пятый элемент. Керамические объекты ручной работы и мастер-классы по лепке от Валерии Гутиевой.</p>
-        <div class="hero-buttons">
-          <a href="./catalog.html" class="btn btn--primary">Смотреть каталог</a>
-        </div>
+      <div class="hero-cta">
+        <a href="./catalog.html" class="btn btn--primary">Смотреть каталог</a>
       </div>
     </section>
 
     <!-- SELECTED WORKS -->
-    <section class="section">
+    <section class="section featured-section">
       <div class="container">
-        <div class="section-header fade-in-up">
-          <p class="section-tag">Избранное</p>
-          <h2 class="section-title">Наши работы</h2>
-          <p class="section-subtitle" id="featured-subtitle">Каждое изделие существует в единственном экземпляре</p>
-        </div>
-        <div class="product-grid" id="featured-grid">
+        <div class="product-grid featured-grid" id="featured-grid">
           <p style="text-align:center;color:var(--color-text-muted);padding:2rem 0;">Загрузка...</p>
         </div>
         <div style="text-align: center; margin-top: var(--space-8);">
@@ -189,11 +166,11 @@
         <img src="./assets/master-valeria.jpg" alt="Валерия Гутиева — мастер Fifth Element Ceramics" width="800" height="1000" loading="lazy" decoding="async">
       </div>
       <div class="footer-about__text">
-        <p class="section-tag">О мастере</p>
+        <p class="section-tag">О нас</p>
         <h2>Валерия Гутиева</h2>
         <p>Автор и основатель Fifth Element Ceramics. Создаю керамические объекты и провожу мастер-классы по лепке в Сочи и Москве.</p>
         <p>Каждое изделие — это путь от комка глины через ручную лепку, сушку и обжиг к готовому объекту с собственным характером. Фактурные поверхности, натуральные цвета, живая энергия ручного труда.</p>
-        <a href="./about.html" class="btn btn--outline footer-about__cta">Подробнее о мастере</a>
+        <a href="./about.html" class="btn btn--outline footer-about__cta">Подробнее о нас</a>
       </div>
     </div>
 
@@ -210,7 +187,7 @@
         <ul>
           <li><a href="./index.html">Главная</a></li>
           <li><a href="./catalog.html">Каталог</a></li>
-          <li><a href="./about.html">О мастере</a></li>
+          <li><a href="./about.html">О нас</a></li>
           <li><a href="./contact.html">Заказать</a></li>
         </ul>
       </div>
@@ -280,7 +257,6 @@
     document.addEventListener('DOMContentLoaded', async () => {
       ProductCatalog.initModalElement();
       const grid = document.getElementById('featured-grid');
-      const subtitle = document.getElementById('featured-subtitle');
       if (!grid) return;
 
       try {
@@ -294,16 +270,12 @@
         const homepage = await homeRes.json();
         ProductCatalog.setProducts(catalog);
 
-        const { featured, isFallback } = ProductCatalog.resolveFeatured(homepage, catalog);
+        const { featured } = ProductCatalog.resolveFeatured(homepage, catalog);
         window.featuredProducts = featured;
 
         if (!featured.length) {
           grid.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:2rem;">Избранные работы скоро появятся.</p>';
           return;
-        }
-
-        if (isFallback && subtitle) {
-          subtitle.textContent = 'Избранное — популярные работы из каталога';
         }
 
         grid.innerHTML = featured.map((p, i) =>

@@ -6,21 +6,10 @@
     const menuClose = document.querySelector('.menu-close');
     const fullscreenMenu = document.getElementById('fullscreen-menu');
     const header = document.getElementById('site-header');
-    const themeBtn = document.querySelector('[data-theme-toggle]');
     const root = document.documentElement;
 
-    let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     root.setAttribute('data-theme', theme);
-
-    function updateThemeIcon() {
-      const icon = themeBtn?.querySelector('[data-theme-icon]');
-      if (!themeBtn || !icon) return;
-      themeBtn.setAttribute(
-        'aria-label',
-        'Переключить на ' + (theme === 'dark' ? 'светлую' : 'тёмную') + ' тему'
-      );
-      icon.textContent = theme === 'dark' ? '☀️' : '🌙';
-    }
 
     function openMenu() {
       if (!fullscreenMenu) return;
@@ -56,12 +45,6 @@
       });
     }
 
-    bindTap(themeBtn, () => {
-      theme = theme === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', theme);
-      updateThemeIcon();
-    });
-
     bindTap(menuToggle, openMenu);
     bindTap(menuClose, closeMenu);
 
@@ -76,8 +59,6 @@
     window.addEventListener('scroll', () => {
       header?.classList.toggle('site-header--scrolled', window.scrollY > 10);
     }, { passive: true });
-
-    updateThemeIcon();
   }
 
   if (document.readyState === 'loading') {
