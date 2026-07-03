@@ -142,9 +142,9 @@
 .site-header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 1.5rem 2rem;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -156,6 +156,11 @@
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   z-index: 1000;
+  pointer-events: none;
+}
+
+.site-header > * {
+  pointer-events: auto;
 }
 
 .site-header--scrolled {
@@ -181,6 +186,39 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
+}
+
+.site-header .site-logo {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.site-header .site-logo:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.02);
+}
+
+.site-header .site-logo__img {
+  display: block;
+  width: auto;
+  height: clamp(22px, 4vw, 30px);
+  border-radius: 0;
+  object-fit: contain;
+}
+
+[data-theme="dark"] .site-header .site-logo {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .site-header .site-logo:hover {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .site-brand {
@@ -390,6 +428,10 @@ body.menu-open {
   .site-header {
     padding: 1rem;
     flex-wrap: nowrap;
+  }
+
+  .site-header .site-logo {
+    padding: 0.3rem 0.6rem;
   }
 
   .menu-toggle {
