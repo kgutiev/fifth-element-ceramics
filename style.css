@@ -189,39 +189,38 @@
 }
 
 .site-header .site-logo {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  display: block;
   padding: 0;
-  height: 44px;
+  line-height: 0;
+  background: none;
+  border: none;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   flex-shrink: 0;
-  overflow: hidden;
 }
 
 .site-header .site-logo:hover {
-  background: rgba(255, 255, 255, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: scale(1.05);
 }
 
 .site-header .site-logo__img {
   display: block;
-  height: 44px;
   width: auto;
-  max-width: min(48vw, 220px);
-  border-radius: 0;
-  object-fit: contain;
+  height: clamp(28px, 4.8vw, 40px);
+  aspect-ratio: 828 / 180;
+  border-radius: 8px;
+  object-fit: fill;
 }
 
 [data-theme="dark"] .site-header .site-logo {
-  background: rgba(0, 0, 0, 0.6);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: none;
+  border: none;
 }
 
 [data-theme="dark"] .site-header .site-logo:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: none;
 }
 
 .site-brand {
@@ -433,13 +432,8 @@ body.menu-open {
     flex-wrap: nowrap;
   }
 
-  .site-header .site-logo {
-    height: 44px;
-  }
-
   .site-header .site-logo__img {
-    height: 44px;
-    max-width: min(42vw, 180px);
+    height: clamp(26px, 7vw, 36px);
   }
 
   .menu-toggle {
