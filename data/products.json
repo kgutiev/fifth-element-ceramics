@@ -1,15 +1,6 @@
 {
   "products": [
     {
-      "title": "Ваза «Нуар»",
-      "info": "Чёрная масса G&S 371, без глазури · В. 22 см",
-      "price": 6800,
-      "height": "22 см",
-      "image": "./assets/textured-vase.jpg",
-      "category": "vases",
-      "status": "В наличии"
-    },
-    {
       "title": "Ваза «Бриз»",
       "info": "Каменная масса, бирюзовая глазурь · В. 32 см",
       "price": 12000,
