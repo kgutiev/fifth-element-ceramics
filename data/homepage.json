@@ -35,23 +35,48 @@
       ]
     },
     {
-      "title": "Кашпо «Эрос»",
-      "info": "Каменная масса G&S 258, дренажное отверстие · Д. 16 см",
-      "price": 4200,
-      "height": "Д. 16 см",
-      "image": "./assets/hero-vase.jpg",
-      "category": "pots",
+      "id": "p-1785408737224",
+      "title": "Скалистый мыс",
+      "info": "Там, где земля встречает воду, форма перестаёт быть строгой. Она течёт.  Скругляется.  Оставляет следы движения. Эта ваза — как фрагмент пейзажа:  чуть размытый берег, камень после дождя, ветер, который не видно, но он здесь был. Немецкая глина/ шамот/ глазурь.",
+      "price": 11890,
+      "height": "Высота: 36 см  Обхват: 68 см",
+      "image": "./assets/uploads/1785408723063_image-06-07-26-04-22-6.jpeg",
+      "category": "vases",
       "status": "В наличии",
       "media": [
         {
           "type": "image",
-          "src": "./assets/hero-vase.jpg"
+          "src": "./assets/uploads/1785408723063_image-06-07-26-04-22-6.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408725587_image-06-07-26-04-22-5.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408727629_image-06-07-26-04-22-4.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408729628_image-06-07-26-04-22-2.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408731678_image-06-07-26-04-22-3.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408733473_image-06-07-26-04-22-1.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408735359_image-06-07-26-04-22.jpeg"
         }
       ]
     }
   ],
   "contacts": {
-    "city": "Сочи / Москва",
+    "city": "Сочи",
     "phone": "",
     "email": "",
     "instagram": "https://www.instagram.com/fifthelement.ceramics",
