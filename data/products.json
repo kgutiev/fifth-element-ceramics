@@ -1,15 +1,6 @@
 {
   "products": [
     {
-      "title": "Ваза «Бриз»",
-      "info": "Каменная масса, бирюзовая глазурь · В. 32 см",
-      "price": 12000,
-      "height": "32 см",
-      "image": "./assets/turquoise-vase.jpg",
-      "category": "vases",
-      "status": "В наличии"
-    },
-    {
       "title": "Ваза «Дзен»",
       "info": "Каменная масса, серая фактура · В. 18 см",
       "price": 5200,
