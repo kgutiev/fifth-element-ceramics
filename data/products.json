@@ -228,6 +228,34 @@
         }
       ],
       "image": "./assets/uploads/1785408338127_image-06-07-26-04-25-3.jpeg"
+    },
+    {
+      "id": "p-1785408455287",
+      "title": "Ваза DORIKA",
+      "info": "Песок, камень, античный ритм. Вертикальные линии, словно выточенные ветром, свет средиземноморского побережья. Матовая фактура и очень тактильная.",
+      "price": 13890,
+      "height": "Высота 36 см. Обхват 77 см.",
+      "category": "vases",
+      "status": "В наличии",
+      "media": [
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408447420_image-06-07-26-04-16-3.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408449754_image-06-07-26-04-16-1.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408451841_image-06-07-26-04-16-2.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408453701_image-06-07-26-04-16.jpeg"
+        }
+      ],
+      "image": "./assets/uploads/1785408447420_image-06-07-26-04-16-3.jpeg"
     }
   ]
 }
