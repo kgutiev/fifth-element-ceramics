@@ -200,6 +200,34 @@
         }
       ],
       "image": "./assets/uploads/1785408226163_image-06-07-26-04-14-5.jpeg"
+    },
+    {
+      "id": "p-1785408346322",
+      "title": "Ваза SAE FOAM",
+      "info": "Морская пена. Воздух. Соль. Вода. Камень. Немецкая глина/шамот/глазури. Держит воду.",
+      "price": 11890,
+      "height": "Высота 27 см. Обхват 77 см.",
+      "category": "vases",
+      "status": "В наличии",
+      "media": [
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408338127_image-06-07-26-04-25-3.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408340328_image-06-07-26-04-25-1.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408342266_image-06-07-26-04-25.jpeg"
+        },
+        {
+          "type": "image",
+          "src": "./assets/uploads/1785408344348_image-06-07-26-04-25-2.jpeg"
+        }
+      ],
+      "image": "./assets/uploads/1785408338127_image-06-07-26-04-25-3.jpeg"
     }
   ]
 }
