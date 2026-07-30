@@ -1,15 +1,6 @@
 {
   "products": [
     {
-      "title": "Ваза «Терра»",
-      "info": "Каменная масса G&S 254, глазурь Terracolor · В. 28 см",
-      "price": 8500,
-      "height": "28 см",
-      "image": "./assets/hero-vase.jpg",
-      "category": "vases",
-      "status": "В наличии"
-    },
-    {
       "title": "Ваза «Нуар»",
       "info": "Чёрная масса G&S 371, без глазури · В. 22 см",
       "price": 6800,
